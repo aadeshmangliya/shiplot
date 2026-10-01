@@ -1,0 +1,7 @@
+{
+  "name": "Shiplot - Multi-Tenant Shipping & Freight Forwarding SaaS",
+  "description": "Enterprise cloud platform for NVOCC carriers, freight forwarders, shippers, and consignees managing FCL, LCL, bills of lading, and global container logistics.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
+
