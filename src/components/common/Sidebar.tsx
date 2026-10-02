@@ -84,21 +84,21 @@ export const Sidebar: React.FC = () => {
 
   return (
     <aside
-      className={`relative border-r border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 transition-all duration-200 flex flex-col shrink-0 ${
+      className={`sticky top-15 h-[calc(100vh-3.75rem)] z-30 border-r border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 transition-all duration-200 flex flex-col shrink-0 select-none ${
         collapsed ? 'w-16' : 'w-64'
       }`}
     >
       {/* Collapse Toggle Button */}
       <button
         onClick={() => setCollapsed(!collapsed)}
-        className="absolute -right-3 top-5 z-20 w-6 h-6 rounded-full border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 flex items-center justify-center text-neutral-500 hover:text-neutral-900 dark:hover:text-white shadow-xs"
+        className="absolute -right-3 top-5 z-20 w-6 h-6 rounded-full border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 flex items-center justify-center text-neutral-500 hover:text-neutral-900 dark:hover:text-white shadow-xs cursor-pointer"
         aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
       >
         {collapsed ? <ChevronRight className="w-3.5 h-3.5" /> : <ChevronLeft className="w-3.5 h-3.5" />}
       </button>
 
-      {/* Navigation items list */}
-      <div className="flex-1 overflow-y-auto p-3 space-y-5">
+      {/* Navigation items list with independent scroll */}
+      <div className="flex-1 overflow-y-auto p-3 space-y-5 overscroll-contain">
         {navSections.map((section, idx) => (
           <div key={idx} className="space-y-1">
             {!collapsed && (
@@ -113,7 +113,7 @@ export const Sidebar: React.FC = () => {
                   key={item.to}
                   to={item.to}
                   end={item.to === '/'}
-                  className={({ isActive }) =>
+                  className={({ isActive }: { isActive: boolean }) =>
                     `flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-xs font-medium transition-all ${
                       isActive
                         ? 'bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 font-semibold shadow-xs'
