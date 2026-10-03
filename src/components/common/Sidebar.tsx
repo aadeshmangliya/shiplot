@@ -25,7 +25,9 @@ import {
   Sun,
   Moon,
   Warehouse,
-  Ticket
+  Ticket,
+  FileSpreadsheet,
+  FileCheck2
 } from 'lucide-react';
 
 export const Sidebar: React.FC = () => {
@@ -45,6 +47,9 @@ export const Sidebar: React.FC = () => {
         { to: '/containers', label: 'Containers Fleet', icon: Box },
         { to: '/gatepass', label: 'Gate Pass (EIR)', icon: Ticket },
         { to: '/warehouses', label: 'Warehouse & Storage', icon: Warehouse },
+        { to: '/delivery-order', label: 'Delivery Order (D.O.)', icon: FileCheck2 },
+        { to: '/manifest', label: 'IGM / EGM Manifest', icon: FileSpreadsheet },
+        { to: '/agency', label: 'Agency & Port Calls', icon: Anchor },
         { to: '/fcl', label: 'FCL Demurrage', icon: Box, badge: criticalDemurrage > 0 ? `${criticalDemurrage} alert` : undefined, badgeColor: 'bg-rose-500' },
         { to: '/lcl', label: 'LCL Groupage / CFS', icon: Boxes },
         { to: '/bookings', label: 'Booking Requests', icon: CalendarCheck, badge: pendingBookings > 0 ? pendingBookings : undefined, badgeColor: 'bg-amber-500' },
@@ -75,6 +80,7 @@ export const Sidebar: React.FC = () => {
       title: 'PORTALS & PLATFORM',
       items: [
         { to: '/platform-admin', label: 'SaaS Platform Admin', icon: Server, badge: 'ROOT', badgeColor: 'bg-purple-600' },
+        { to: '/portal/track', label: 'Public Cargo Track', icon: ExternalLink },
         { to: '/portal/shipper', label: 'Shipper Portal', icon: ExternalLink },
         { to: '/portal/consignee', label: 'Consignee Portal', icon: ExternalLink },
         { to: '/portal/agent', label: 'CFS Agent Portal', icon: ExternalLink }
@@ -84,7 +90,7 @@ export const Sidebar: React.FC = () => {
 
   return (
     <aside
-      className={`sticky top-15 h-[calc(100vh-3.75rem)] z-30 border-r border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 transition-all duration-200 flex flex-col shrink-0 select-none ${
+      className={`relative h-full z-30 border-r border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 transition-all duration-200 flex flex-col shrink-0 select-none ${
         collapsed ? 'w-16' : 'w-64'
       }`}
     >
@@ -98,7 +104,7 @@ export const Sidebar: React.FC = () => {
       </button>
 
       {/* Navigation items list with independent scroll */}
-      <div className="flex-1 overflow-y-auto p-3 space-y-5 overscroll-contain">
+      <div className="flex-1 min-h-0 overflow-y-auto p-3 space-y-5 overscroll-contain">
         {navSections.map((section, idx) => (
           <div key={idx} className="space-y-1">
             {!collapsed && (

@@ -27,6 +27,10 @@ import { PortalShipperPage } from './pages/PortalShipperPage';
 import { PortalConsigneePage } from './pages/PortalConsigneePage';
 import { PortalAgentPage } from './pages/PortalAgentPage';
 import { AuthPage } from './pages/AuthPage';
+import { ManifestPage } from './pages/ManifestPage';
+import { DeliveryOrderPage } from './pages/DeliveryOrderPage';
+import { ShippingAgencyPage } from './pages/ShippingAgencyPage';
+import { PublicTrackingPage } from './pages/PublicTrackingPage';
 import { ShipmentDetailModal } from './components/modals/ShipmentDetailModal';
 import { BillOfLadingModal } from './components/modals/BillOfLadingModal';
 import { CreateBookingModal } from './components/modals/CreateBookingModal';
@@ -40,11 +44,11 @@ const AppLayout: React.FC = () => {
   } = useApp();
 
   return (
-    <div className="min-h-screen flex flex-col bg-neutral-50 dark:bg-neutral-950 text-neutral-900 dark:text-neutral-100 antialiased font-sans transition-colors">
+    <div className="h-screen w-full flex flex-col overflow-hidden bg-neutral-50 dark:bg-neutral-950 text-neutral-900 dark:text-neutral-100 antialiased font-sans transition-colors">
       <Header />
-      <div className="flex-1 flex">
+      <div className="flex-1 flex min-h-0 overflow-hidden relative">
         <Sidebar />
-        <main className="flex-1 overflow-y-auto min-w-0">
+        <main className="flex-1 h-full overflow-y-auto min-w-0 overscroll-contain">
           <Outlet />
         </main>
       </div>
@@ -78,8 +82,11 @@ export default function App() {
     <AppProvider>
       <BrowserRouter>
         <Routes>
-          {/* Public Auth Page */}
+          {/* Public Standalone Pages */}
           <Route path="/login" element={<AuthPage />} />
+          <Route path="/track" element={<PublicTrackingPage />} />
+          <Route path="/track/:trackingNo" element={<PublicTrackingPage />} />
+          <Route path="/portal/track" element={<PublicTrackingPage />} />
 
           {/* SaaS Application Shell */}
           <Route element={<AppLayout />}>
@@ -90,6 +97,12 @@ export default function App() {
             <Route path="/gatepass" element={<GatePassPage />} />
             <Route path="/warehouses" element={<WarehousePage />} />
             <Route path="/warehouse" element={<WarehousePage />} />
+            <Route path="/manifest" element={<ManifestPage />} />
+            <Route path="/manifests" element={<ManifestPage />} />
+            <Route path="/delivery-order" element={<DeliveryOrderPage />} />
+            <Route path="/do" element={<DeliveryOrderPage />} />
+            <Route path="/agency" element={<ShippingAgencyPage />} />
+            <Route path="/shipping-agency" element={<ShippingAgencyPage />} />
             <Route path="/lcl" element={<LclPage />} />
             <Route path="/bookings" element={<BookingsPage />} />
             <Route path="/bill-of-lading" element={<BillOfLadingPage />} />

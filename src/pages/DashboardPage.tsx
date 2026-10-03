@@ -13,7 +13,12 @@ import {
   Navigation,
   Compass,
   CheckCircle2,
-  CalendarCheck
+  CalendarCheck,
+  FileCheck2,
+  FileSpreadsheet,
+  Clock,
+  ArrowDownLeft,
+  Layers
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
@@ -26,6 +31,10 @@ export const DashboardPage: React.FC = () => {
     bookings,
     invoices,
     monthlyMetrics,
+    portCalls,
+    deliveryOrders,
+    igms,
+    egms,
     setSelectedShipmentForDetail,
     setSelectedShipmentForBl,
     setIsNewBookingOpen
@@ -42,6 +51,14 @@ export const DashboardPage: React.FC = () => {
   const unpaidTotal = invoices
     .filter(i => i.paymentStatus !== 'Paid')
     .reduce((sum, i) => sum + i.total, 0);
+
+  // Agency & Operations Widgets (SRS Section 9)
+  const todayArrivals = portCalls.filter(p => p.status === 'Berthed' || p.status === 'At Anchorage');
+  const todayDepartures = portCalls.filter(p => p.status === 'Operations Completed' || p.status === 'Sailed');
+  const pendingDoCount = deliveryOrders.filter(d => d.status === 'Issued').length;
+  const pendingIgmCount = igms.filter(i => i.webocFilingStatus === 'Draft' || i.webocFilingStatus === 'Submitted').length;
+  const pendingEgmCount = egms.filter(e => e.status === 'Draft' || e.status === 'Filed').length;
+  const overdueInvoicesCount = invoices.filter(i => i.paymentStatus === 'Overdue').length;
 
   const kpis = [
     {
@@ -168,6 +185,135 @@ export const DashboardPage: React.FC = () => {
             </div>
           );
         })}
+      </div>
+
+      {/* SRS Section 9: Shipping Agency, Port Calls & Customs Compliance Widgets */}
+      <div className="p-5 rounded-xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-xs space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-neutral-100 dark:border-neutral-800">
+          <div>
+            <div className="flex items-center gap-2">
+              <Anchor className="w-4 h-4 text-neutral-900 dark:text-white" />
+              <h3 className="font-bold text-sm text-neutral-900 dark:text-white">
+                Port Operations, Manifests & Revenue Watch
+              </h3>
+            </div>
+            <p className="text-[11px] text-neutral-500 font-mono mt-0.5">
+              Real-time vessel arrivals/departures, delivery orders, customs manifest queues, and collection alerts
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => navigate('/agency')}
+              className="text-xs text-blue-600 dark:text-blue-400 hover:underline font-mono"
+            >
+              Port Call Management →
+            </button>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 font-mono text-xs">
+          {/* Today's Vessel Arrivals */}
+          <div
+            onClick={() => navigate('/agency')}
+            className="p-3.5 rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-800/40 hover:border-neutral-300 dark:hover:border-neutral-700 transition-colors cursor-pointer"
+          >
+            <div className="flex items-center justify-between text-neutral-500">
+              <span className="text-[10px]">ARRIVALS TODAY</span>
+              <Anchor className="w-3.5 h-3.5 text-blue-500" />
+            </div>
+            <div className="text-xl font-bold text-neutral-900 dark:text-white mt-1">
+              {todayArrivals.length} Call(s)
+            </div>
+            <div className="text-[10px] text-neutral-500 truncate mt-0.5">
+              {todayArrivals[0]?.vesselName || 'No incoming today'}
+            </div>
+          </div>
+
+          {/* Today's Vessel Departures */}
+          <div
+            onClick={() => navigate('/agency')}
+            className="p-3.5 rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-800/40 hover:border-neutral-300 dark:hover:border-neutral-700 transition-colors cursor-pointer"
+          >
+            <div className="flex items-center justify-between text-neutral-500">
+              <span className="text-[10px]">DEPARTURES</span>
+              <Ship className="w-3.5 h-3.5 text-emerald-500" />
+            </div>
+            <div className="text-xl font-bold text-neutral-900 dark:text-white mt-1">
+              {todayDepartures.length} Vessel(s)
+            </div>
+            <div className="text-[10px] text-neutral-500 truncate mt-0.5">
+              {todayDepartures[0]?.vesselName || 'All berthed / ready'}
+            </div>
+          </div>
+
+          {/* Pending Delivery Orders */}
+          <div
+            onClick={() => navigate('/delivery-order')}
+            className="p-3.5 rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-800/40 hover:border-neutral-300 dark:hover:border-neutral-700 transition-colors cursor-pointer"
+          >
+            <div className="flex items-center justify-between text-neutral-500">
+              <span className="text-[10px]">PENDING D.O.</span>
+              <FileCheck2 className="w-3.5 h-3.5 text-purple-500" />
+            </div>
+            <div className="text-xl font-bold text-neutral-900 dark:text-white mt-1">
+              {pendingDoCount} Active
+            </div>
+            <div className="text-[10px] text-purple-600 dark:text-purple-400 font-bold mt-0.5">
+              Manage D.O. →
+            </div>
+          </div>
+
+          {/* Pending IGM Manifests */}
+          <div
+            onClick={() => navigate('/manifest')}
+            className="p-3.5 rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-800/40 hover:border-neutral-300 dark:hover:border-neutral-700 transition-colors cursor-pointer"
+          >
+            <div className="flex items-center justify-between text-neutral-500">
+              <span className="text-[10px]">PENDING IGM</span>
+              <FileSpreadsheet className="w-3.5 h-3.5 text-amber-500" />
+            </div>
+            <div className="text-xl font-bold text-neutral-900 dark:text-white mt-1">
+              {pendingIgmCount} Inward
+            </div>
+            <div className="text-[10px] text-amber-600 dark:text-amber-400 font-bold mt-0.5">
+              WeBOC Queue →
+            </div>
+          </div>
+
+          {/* Pending EGM Manifests */}
+          <div
+            onClick={() => navigate('/manifest')}
+            className="p-3.5 rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-800/40 hover:border-neutral-300 dark:hover:border-neutral-700 transition-colors cursor-pointer"
+          >
+            <div className="flex items-center justify-between text-neutral-500">
+              <span className="text-[10px]">PENDING EGM</span>
+              <FileSpreadsheet className="w-3.5 h-3.5 text-blue-500" />
+            </div>
+            <div className="text-xl font-bold text-neutral-900 dark:text-white mt-1">
+              {pendingEgmCount} Outward
+            </div>
+            <div className="text-[10px] text-blue-600 dark:text-blue-400 font-bold mt-0.5">
+              Customs Filing →
+            </div>
+          </div>
+
+          {/* Overdue Customer Invoices */}
+          <div
+            onClick={() => navigate('/finance')}
+            className="p-3.5 rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-800/40 hover:border-neutral-300 dark:hover:border-neutral-700 transition-colors cursor-pointer"
+          >
+            <div className="flex items-center justify-between text-neutral-500">
+              <span className="text-[10px]">OVERDUE BILLS</span>
+              <DollarSign className="w-3.5 h-3.5 text-rose-500" />
+            </div>
+            <div className="text-xl font-bold text-rose-600 dark:text-rose-400 mt-1">
+              {overdueInvoicesCount} Invoices
+            </div>
+            <div className="text-[10px] text-rose-600 dark:text-rose-400 font-bold mt-0.5">
+              Review Ledger →
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Volume Chart & Demurrage Risk Split */}

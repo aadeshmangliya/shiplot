@@ -13,7 +13,16 @@ import {
   UserProfile,
   GatePass,
   GatePassStatus,
-  WarehouseCargoItem
+  WarehouseCargoItem,
+  RolePermissions,
+  ImportGeneralManifest,
+  ExportGeneralManifest,
+  DeliveryOrder,
+  ShippingInstruction,
+  PortCall,
+  LedgerEntry,
+  DisbursementAccount,
+  DebitCreditNote
 } from '../types';
 import {
   initialCompanies,
@@ -27,7 +36,15 @@ import {
   initialInvoices,
   initialPorts,
   initialGatePasses,
-  initialWarehouseItems
+  initialWarehouseItems,
+  initialIgms,
+  initialEgms,
+  initialDeliveryOrders,
+  initialShippingInstructions,
+  initialPortCalls,
+  initialLedgerEntries,
+  initialDisbursementAccounts,
+  initialDebitCreditNotes
 } from '../mock/data';
 
 interface AppContextType {
@@ -42,13 +59,14 @@ interface AppContextType {
   logout: () => void;
   setCurrentUser: React.Dispatch<React.SetStateAction<UserProfile>>;
 
-  // Companies / Multi-Tenant
+  // Companies / Multi-Tenant & Branding
   companies: Company[];
   currentCompany: Company;
   setCurrentCompany: (company: Company) => void;
   toggleCompanyStatus: (id: string) => void;
   updateCompanyPlan: (id: string, plan: Company['plan']) => void;
   provisionCompany: (company: Company) => void;
+  updateCompanyBranding: (branding: Partial<Company>) => void;
 
   // Logistics Core State
   shipments: Shipment[];
@@ -72,6 +90,25 @@ interface AppContextType {
   ports: Port[];
   roles: RoleItem[];
   togglePermission: (roleId: string, permissionKey: string) => void;
+  canUserPerform: (permissionKey: keyof RolePermissions) => boolean;
+
+  // SRS & WPCargo Modules
+  igms: ImportGeneralManifest[];
+  addIgm: (igm: ImportGeneralManifest) => void;
+  egms: ExportGeneralManifest[];
+  addEgm: (egm: ExportGeneralManifest) => void;
+  deliveryOrders: DeliveryOrder[];
+  addDeliveryOrder: (order: DeliveryOrder) => void;
+  shippingInstructions: ShippingInstruction[];
+  addShippingInstruction: (si: ShippingInstruction) => void;
+  portCalls: PortCall[];
+  updatePortCall: (id: string, updates: Partial<PortCall>) => void;
+  ledgerEntries: LedgerEntry[];
+  addLedgerEntry: (entry: LedgerEntry) => void;
+  disbursementAccounts: DisbursementAccount[];
+  addDisbursementAccount: (pda: DisbursementAccount) => void;
+  debitCreditNotes: DebitCreditNote[];
+  addDebitCreditNote: (note: DebitCreditNote) => void;
 
   // Global Interactive Modals
   selectedShipmentForDetail: Shipment | null;
@@ -144,6 +181,60 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [monthlyMetrics] = useState<MonthlyMetric[]>(initialMonthlyMetrics);
   const [ports] = useState<Port[]>(initialPorts);
   const [roles, setRoles] = useState<RoleItem[]>(initialRoles);
+
+  // SRS & WPCargo Module States
+  const [igms, setIgms] = useState<ImportGeneralManifest[]>(initialIgms);
+  const [egms, setEgms] = useState<ExportGeneralManifest[]>(initialEgms);
+  const [deliveryOrders, setDeliveryOrders] = useState<DeliveryOrder[]>(initialDeliveryOrders);
+  const [shippingInstructions, setShippingInstructions] = useState<ShippingInstruction[]>(initialShippingInstructions);
+  const [portCalls, setPortCalls] = useState<PortCall[]>(initialPortCalls);
+  const [ledgerEntries, setLedgerEntries] = useState<LedgerEntry[]>(initialLedgerEntries);
+  const [disbursementAccounts, setDisbursementAccounts] = useState<DisbursementAccount[]>(initialDisbursementAccounts);
+  const [debitCreditNotes, setDebitCreditNotes] = useState<DebitCreditNote[]>(initialDebitCreditNotes);
+
+  const addIgm = (newIgm: ImportGeneralManifest) => {
+    setIgms(prev => [newIgm, ...prev]);
+  };
+
+  const addEgm = (newEgm: ExportGeneralManifest) => {
+    setEgms(prev => [newEgm, ...prev]);
+  };
+
+  const addDeliveryOrder = (newOrder: DeliveryOrder) => {
+    setDeliveryOrders(prev => [newOrder, ...prev]);
+  };
+
+  const addShippingInstruction = (newSi: ShippingInstruction) => {
+    setShippingInstructions(prev => [newSi, ...prev]);
+  };
+
+  const updatePortCall = (id: string, updates: Partial<PortCall>) => {
+    setPortCalls(prev => prev.map(p => (p.id === id ? { ...p, ...updates } : p)));
+  };
+
+  const addLedgerEntry = (entry: LedgerEntry) => {
+    setLedgerEntries(prev => [entry, ...prev]);
+  };
+
+  const addDisbursementAccount = (pda: DisbursementAccount) => {
+    setDisbursementAccounts(prev => [pda, ...prev]);
+  };
+
+  const addDebitCreditNote = (note: DebitCreditNote) => {
+    setDebitCreditNotes(prev => [note, ...prev]);
+  };
+
+  const updateCompanyBranding = (branding: Partial<Company>) => {
+    setCurrentCompany(prev => ({ ...prev, ...branding }));
+    setCompanies(prev =>
+      prev.map(c => (c.id === currentCompany.id ? { ...c, ...branding } : c))
+    );
+  };
+
+  const canUserPerform = (permissionKey: keyof RolePermissions): boolean => {
+    const userRole = roles.find(r => r.roleId === currentUser.role) || roles[0];
+    return !!userRole.permissions[permissionKey];
+  };
 
   // Modals state
   const [selectedShipmentForDetail, setSelectedShipmentForDetail] = useState<Shipment | null>(null);
@@ -295,6 +386,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         toggleCompanyStatus,
         updateCompanyPlan,
         provisionCompany,
+        updateCompanyBranding,
         shipments,
         addShipment,
         containers,
@@ -316,6 +408,23 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         ports,
         roles,
         togglePermission,
+        canUserPerform,
+        igms,
+        addIgm,
+        egms,
+        addEgm,
+        deliveryOrders,
+        addDeliveryOrder,
+        shippingInstructions,
+        addShippingInstruction,
+        portCalls,
+        updatePortCall,
+        ledgerEntries,
+        addLedgerEntry,
+        disbursementAccounts,
+        addDisbursementAccount,
+        debitCreditNotes,
+        addDebitCreditNote,
         selectedShipmentForDetail,
         setSelectedShipmentForDetail,
         selectedShipmentForBl,

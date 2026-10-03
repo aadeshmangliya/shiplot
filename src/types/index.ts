@@ -14,6 +14,16 @@ export interface Company {
   usersCount: number;
   mrrUsd: number;
   adminEmail: string;
+  // WPCargo Company Branding System
+  logoUrl?: string;
+  displayName?: string;
+  tagline?: string;
+  primaryColor?: string;
+  secondaryColor?: string;
+  address?: string;
+  phone?: string;
+  email?: string;
+  nationalId?: string; // NTN / Tax ID / TRN
 }
 
 export interface RolePermissions {
@@ -27,6 +37,13 @@ export interface RolePermissions {
   carrierContracts: boolean;
   ledgerInvoicing: boolean;
   extraTelemetry: boolean;
+  // SRS Extended Permissions
+  ledgerAccess: boolean;
+  igmEgmAccess: boolean;
+  customsClearanceAccess: boolean;
+  canGenerateDeliveryOrder: boolean;
+  agencyOperations: boolean;
+  exportWorkflow: boolean;
 }
 
 export interface RoleItem {
@@ -259,4 +276,241 @@ export interface UserProfile {
   role: 'nvocc_admin' | 'freight_forwarder' | 'finance_staff' | 'operations_staff' | 'exporter' | 'importer' | 'agent' | 'platform_admin';
   workspaceId: string;
   workspaceName: string;
+}
+
+// ============================================
+// SRS SECTION 5 & 6 — IGM / EGM MANIFESTS
+// ============================================
+export interface ManifestBlItem {
+  blNumber: string;
+  lineNo: number;
+  subLineNo: number;
+  shipper: string;
+  consignee: string;
+  notifyParty?: string;
+  packagesCount: number;
+  packageType: string;
+  cargoDesc: string;
+  grossWeightKg: number;
+  cbmVolume: number;
+  containers: string[];
+  marksAndNumbers: string;
+}
+
+export interface ImportGeneralManifest {
+  id: string;
+  igmNumber: string;
+  vesselName: string;
+  imoNumber: string;
+  voyageNumber: string;
+  callSign: string;
+  shippingLine: string;
+  portOfArrival: string;
+  portCode: string;
+  terminalName: string;
+  etaDate: string;
+  filingDate: string;
+  totalBls: number;
+  totalContainers: number;
+  totalGrossWeightKg: number;
+  customsStation: string;
+  webocFilingStatus: 'Draft' | 'Submitted' | 'Acknowledged' | 'Approved' | 'Query Raised';
+  blItems: ManifestBlItem[];
+}
+
+export interface ExportGeneralManifest {
+  id: string;
+  egmNumber: string;
+  vesselName: string;
+  imoNumber: string;
+  voyageNumber: string;
+  shippingLine: string;
+  portOfLoading: string;
+  portCode: string;
+  terminalName: string;
+  sailingDate: string;
+  filingDate: string;
+  totalBls: number;
+  totalContainers: number;
+  totalGrossWeightKg: number;
+  customsStation: string;
+  status: 'Draft' | 'Filed' | 'Sailing Clearance Issued';
+  blItems: ManifestBlItem[];
+}
+
+// ============================================
+// WPCARGO PARITY — DELIVERY ORDER (D.O.)
+// ============================================
+export interface DeliveryOrderContainer {
+  containerNo: string;
+  sizeType: string;
+  sealNo: string;
+  emptyReturnLocation: string;
+  emptyReturnValidity: string;
+  marksAndNumbers: string;
+  packageCount: number;
+  packageType: string;
+  cargoDesc: string;
+  grossWeightKg: number;
+}
+
+export interface DeliveryOrder {
+  id: string;
+  doNumber: string;
+  issueDate: string;
+  validityDate: string;
+  vesselName: string;
+  voyage: string;
+  virNumber: string;
+  mblNumber: string;
+  hblNumber: string;
+  destinationPort: string;
+  igmNumber: string;
+  igmLineNo: number;
+  igmSubLineNo: number;
+  issuedTo: string;
+  consigneeName: string;
+  consigneeAddress: string;
+  notifyPartyName: string;
+  notifyPartyAddress: string;
+  containers: DeliveryOrderContainer[];
+  lineRemarks: string;
+  status: 'Issued' | 'Expired' | 'Surrendered' | 'Gate Pass Generated';
+  clearingAgent?: string;
+}
+
+// ============================================
+// EXPORT-SIDE NVOCC & SHIPPING INSTRUCTIONS
+// ============================================
+export interface ShippingInstruction {
+  id: string;
+  siNumber: string;
+  bookingNo: string;
+  shipperName: string;
+  consigneeName: string;
+  notifyPartyName: string;
+  vesselName: string;
+  voyage: string;
+  pol: string;
+  pod: string;
+  finalDestination: string;
+  cargoDesc: string;
+  packagesCount: number;
+  packageType: string;
+  grossWeightKg: number;
+  cbmVolume: number;
+  submissionDate: string;
+  status: 'Draft' | 'Submitted' | 'Verified' | 'Draft B/L Prepared';
+  containers: string[];
+}
+
+export interface ExportStuffingPlan {
+  id: string;
+  planNumber: string;
+  vesselName: string;
+  voyage: string;
+  loadingTerminal: string;
+  cutoffDate: string;
+  containerNo: string;
+  sizeType: string;
+  allocatedWeightKg: number;
+  vgmVerified: boolean;
+  assignedSlot: string; // e.g., Bay 14, Row 06, Tier 82
+  status: 'Planned' | 'Stuffed' | 'Gated In' | 'Loaded';
+}
+
+// ============================================
+// SHIPPING AGENCY OPERATIONS & PORT CALLS
+// ============================================
+export interface SofEvent {
+  id: string;
+  timestamp: string;
+  event: string;
+  category: 'Navigation' | 'Berthing' | 'Cargo Ops' | 'Customs/Clearance' | 'Bunkering';
+  remarks?: string;
+}
+
+export interface PortCall {
+  id: string;
+  callId: string;
+  vesselName: string;
+  imo: string;
+  voyage: string;
+  carrier: string;
+  principalName: string;
+  portName: string;
+  portCode: string;
+  terminalName: string;
+  berthNo: string;
+  eta: string;
+  etb: string; // Estimated Time of Berthing
+  etd: string;
+  actualArrival?: string;
+  actualBerthing?: string;
+  actualDeparture?: string;
+  status: 'Scheduled' | 'At Anchorage' | 'Berthed' | 'Operations Completed' | 'Sailed';
+  noticeOfReadinessTendered?: string;
+  portClearanceStatus: 'Pending' | 'Granted';
+  sailingClearanceStatus: 'Pending' | 'Granted';
+  sofEvents: SofEvent[];
+}
+
+// ============================================
+// ACCOUNTS / LEDGER / DISBURSEMENT ACCOUNTS
+// ============================================
+export interface LedgerEntry {
+  id: string;
+  date: string;
+  accountCode: string;
+  accountTitle: string;
+  accountType: 'Asset' | 'Liability' | 'Equity' | 'Revenue' | 'Expense';
+  voucherNo: string;
+  voucherType: 'JV' | 'BPV' | 'BRV' | 'CPV' | 'CRV';
+  description: string;
+  debit: number;
+  credit: number;
+  runningBalance: number;
+  entityName?: string;
+  vesselVoyage?: string;
+}
+
+export interface DisbursementAccount {
+  id: string;
+  accountNo: string; // PDA or FDA Number
+  type: 'PDA' | 'FDA'; // Proforma or Final Disbursement Account
+  vesselName: string;
+  voyage: string;
+  portName: string;
+  principalName: string;
+  eta: string;
+  etd: string;
+  currency: string;
+  pilotageDues: number;
+  towageAndTugs: number;
+  portBerthHire: number;
+  customsLightDues: number;
+  immigrationFormalities: number;
+  agencyFee: number;
+  stevedoringOps: number;
+  bunkeringFuel: number;
+  freshWaterProvision: number;
+  totalDisbursement: number;
+  advanceReceived: number;
+  balanceDue: number;
+  status: 'Draft' | 'Approved by Principal' | 'Disbursed' | 'Settled';
+}
+
+export interface DebitCreditNote {
+  id: string;
+  noteNumber: string;
+  type: 'Debit Note' | 'Credit Note';
+  issueDate: string;
+  partyName: string;
+  partyRole: 'Principal' | 'Shipper' | 'Consignee' | 'Shipping Line' | 'Vendor';
+  referenceDoc: string; // Invoice or B/L No
+  vesselVoyage: string;
+  currency: string;
+  amount: number;
+  reason: string;
+  status: 'Pending' | 'Approved' | 'Adjusted';
 }

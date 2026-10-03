@@ -15,8 +15,62 @@ import {
   WarehouseCargoItem
 } from '../types';
 
-export const initialCompanies: Company[] = rawMockData.companies as Company[];
-export const initialRoles: RoleItem[] = rawMockData.roles as RoleItem[];
+import {
+  initialIgms,
+  initialEgms,
+  initialDeliveryOrders,
+  initialShippingInstructions,
+  initialExportStuffingPlans,
+  initialPortCalls,
+  initialLedgerEntries,
+  initialDisbursementAccounts,
+  initialDebitCreditNotes,
+  initialSrsRoles,
+  initialPakistanCustomsCases,
+  initialAgencyPartners
+} from './srsMockData';
+
+export {
+  initialIgms,
+  initialEgms,
+  initialDeliveryOrders,
+  initialShippingInstructions,
+  initialExportStuffingPlans,
+  initialPortCalls,
+  initialLedgerEntries,
+  initialDisbursementAccounts,
+  initialDebitCreditNotes,
+  initialSrsRoles,
+  initialPakistanCustomsCases,
+  initialAgencyPartners
+};
+
+const baseCompanies = rawMockData.companies as Company[];
+
+export const initialCompanies: Company[] = [
+  {
+    ...baseCompanies[0],
+    id: 'COMP-001',
+    name: 'Indus Magna Shipping (Shipping Agency & NVOCC)',
+    registrationNo: 'PK-FBR-NTN-4129840 / FMC-98214',
+    hqCity: 'Karachi & Lahore',
+    country: 'Pakistan',
+    plan: 'Enterprise Plus',
+    adminEmail: 'ops.director@indusmagna.com',
+    logoUrl: '',
+    displayName: 'Indus Magna Shipping',
+    tagline: 'Leading Ocean Liner Agency, NVOCC & Terminal Drayage Operator',
+    primaryColor: '#00665e',
+    secondaryColor: '#0f172a',
+    address: 'Suite 802, Trade Tower, Abdullah Haroon Road, Karachi 74400, Pakistan',
+    phone: '+92-21-3568-9900',
+    email: 'agency@indusmagna.com',
+    nationalId: 'NTN #4129840-3 / WeBOC Agency Code #IMS-77'
+  },
+  ...baseCompanies.slice(1)
+];
+
+export const initialRoles: RoleItem[] = initialSrsRoles;
 export const initialAuditLogs: AuditLog[] = rawMockData.auditLogs as AuditLog[];
 export const initialMonthlyMetrics: MonthlyMetric[] = rawMockData.monthlyMetrics as MonthlyMetric[];
 export const initialVessels: Vessel[] = rawMockData.vessels as Vessel[];

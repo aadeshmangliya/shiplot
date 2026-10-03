@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { initialAgencyPartners } from '../mock/data';
 import {
   Users2,
   Building2,
@@ -35,6 +36,7 @@ export const PartnersPage: React.FC = () => {
       status: 'Active Tier 1',
       creditTerms: 'Prepaid'
     },
+    ...initialAgencyPartners,
     {
       id: 'pt_03',
       name: 'Mediterranean Shipping Company (MSC)',
@@ -114,6 +116,9 @@ export const PartnersPage: React.FC = () => {
           className="px-3 py-2 rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-800 text-xs font-mono text-neutral-700 dark:text-neutral-300"
         >
           <option value="All">All Partner Categories</option>
+          <option value="Principal">Overseas Principal (Agency)</option>
+          <option value="Ship Owner">Ship Owner</option>
+          <option value="Charterer">Charterer</option>
           <option value="Shipper / Exporter">Shipper / Exporter</option>
           <option value="Consignee / Importer">Consignee / Importer</option>
           <option value="Ocean Carrier">Ocean Carrier Line</option>
