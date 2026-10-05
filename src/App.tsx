@@ -31,6 +31,8 @@ import { ManifestPage } from './pages/ManifestPage';
 import { DeliveryOrderPage } from './pages/DeliveryOrderPage';
 import { ShippingAgencyPage } from './pages/ShippingAgencyPage';
 import { PublicTrackingPage } from './pages/PublicTrackingPage';
+import { DocumentTemplatesPage } from './pages/DocumentTemplatesPage';
+import { AuditLogsPage } from './pages/AuditLogsPage';
 import { ShipmentDetailModal } from './components/modals/ShipmentDetailModal';
 import { BillOfLadingModal } from './components/modals/BillOfLadingModal';
 import { CreateBookingModal } from './components/modals/CreateBookingModal';
@@ -107,6 +109,8 @@ export default function App() {
             <Route path="/bookings" element={<BookingsPage />} />
             <Route path="/bill-of-lading" element={<BillOfLadingPage />} />
             <Route path="/documents" element={<DocumentsPage />} />
+            <Route path="/templates" element={<DocumentTemplatesPage />} />
+            <Route path="/document-templates" element={<DocumentTemplatesPage />} />
             <Route path="/tracking" element={<TrackingPage />} />
             <Route path="/customs" element={<CustomsPage />} />
             <Route path="/ports" element={<PortsTerminalsPage />} />
@@ -116,12 +120,15 @@ export default function App() {
             <Route path="/reports" element={<ReportsPage />} />
             <Route path="/users" element={<UsersRolesPage />} />
             <Route path="/settings" element={<CompanySettingsPage />} />
+            <Route path="/audit-logs" element={<AuditLogsPage />} />
+            <Route path="/audit" element={<AuditLogsPage />} />
+            <Route path="/company/audit" element={<AuditLogsPage />} />
 
             {/* Platform Admin */}
             <Route path="/platform-admin" element={<PlatformAdminPage />} />
-            <Route path="/platform-admin/companies" element={<PlatformAdminPage />} />
-            <Route path="/platform-admin/subscriptions" element={<PlatformAdminPage />} />
-            <Route path="/platform-admin/audit" element={<PlatformAdminPage />} />
+            <Route path="/platform-admin/companies" element={<PlatformAdminPage defaultTab="workspaces" />} />
+            <Route path="/platform-admin/subscriptions" element={<PlatformAdminPage defaultTab="workspaces" />} />
+            <Route path="/platform-admin/audit" element={<PlatformAdminPage defaultTab="audit" />} />
 
             {/* External Client Portals */}
             <Route path="/portal/shipper" element={<PortalShipperPage />} />

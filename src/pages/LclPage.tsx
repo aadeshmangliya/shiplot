@@ -11,7 +11,7 @@ import {
   Scale,
   X
 } from 'lucide-react';
-import { OceanBookingInlineForm } from '../components/forms/OceanBookingInlineForm';
+import { LclBookingForm } from '../components/forms/LclBookingForm';
 
 export const LclPage: React.FC = () => {
   const { shipments, setSelectedShipmentForBl, setSelectedShipmentForDetail } = useApp();
@@ -95,8 +95,7 @@ export const LclPage: React.FC = () => {
 
       {/* On-Page Inline 5-Tab Booking Form (No Popup) */}
       {isBookingFormOpen && (
-        <OceanBookingInlineForm
-          mode="LCL"
+        <LclBookingForm
           onClose={() => setIsBookingFormOpen(false)}
         />
       )}

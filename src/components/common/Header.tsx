@@ -12,7 +12,8 @@ import {
   Plus,
   AlertTriangle,
   LogOut,
-  Layers
+  Layers,
+  ShieldCheck
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
@@ -228,6 +229,16 @@ export const Header: React.FC = () => {
               </div>
             )}
           </div>
+
+          {/* Audit Trail Shortcut */}
+          <button
+            onClick={() => navigate(currentUser.role === 'platform_admin' ? '/platform-admin/audit' : '/audit-logs')}
+            title="Audit Trail & Security Logs"
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-neutral-200 dark:border-neutral-800 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors cursor-pointer text-xs font-mono"
+          >
+            <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+            <span className="hidden xl:inline text-[11px] font-semibold">Audit</span>
+          </button>
 
           {/* Theme Toggle */}
           <button

@@ -70,8 +70,10 @@ export const initialCompanies: Company[] = [
   ...baseCompanies.slice(1)
 ];
 
+import { comprehensiveAuditLogs } from './auditMockData';
+
 export const initialRoles: RoleItem[] = initialSrsRoles;
-export const initialAuditLogs: AuditLog[] = rawMockData.auditLogs as AuditLog[];
+export const initialAuditLogs: AuditLog[] = comprehensiveAuditLogs;
 export const initialMonthlyMetrics: MonthlyMetric[] = rawMockData.monthlyMetrics as MonthlyMetric[];
 export const initialVessels: Vessel[] = rawMockData.vessels as Vessel[];
 export const initialShipments: Shipment[] = rawMockData.shipments as Shipment[];

@@ -14,16 +14,83 @@ export interface Company {
   usersCount: number;
   mrrUsd: number;
   adminEmail: string;
-  // WPCargo Company Branding System
+  // WPCargo Company Branding & Detailed Profile
   logoUrl?: string;
   displayName?: string;
   tagline?: string;
   primaryColor?: string;
   secondaryColor?: string;
   address?: string;
+  stateProvince?: string;
+  postalCode?: string;
   phone?: string;
+  emergencyPhone?: string;
   email?: string;
+  billingEmail?: string;
   nationalId?: string; // NTN / Tax ID / TRN
+  ntnNumber?: string;
+  salesTaxNumber?: string;
+  website?: string;
+  scacCode?: string;
+  blPrefix?: string;
+  ediGateway?: string;
+  signatoryName?: string;
+  signatoryTitle?: string;
+  bankName?: string;
+  bankAccountTitle?: string;
+  bankIban?: string;
+  bankSwift?: string;
+  selectedTemplates?: Record<string, string>;
+}
+
+export type CompanyUserRole =
+  | 'freight_forwarder'
+  | 'importer'
+  | 'exporter'
+  | 'finance'
+  | 'operations'
+  | 'documentation'
+  | 'nvocc_admin';
+
+export interface CompanyUser {
+  id: string;
+  name: string;
+  email: string;
+  password?: string;
+  role: CompanyUserRole;
+  roleTitle: string;
+  department: string;
+  phone?: string;
+  status: 'Active' | 'Suspended';
+  createdAt: string;
+  lastLogin?: string;
+  companyId: string;
+}
+
+export type TemplateDocType =
+  | 'HBL'
+  | 'MBL'
+  | 'DO'
+  | 'AIR_BILL'
+  | 'GATE_PASS'
+  | 'INVOICE'
+  | 'ARRIVAL_NOTICE'
+  | 'SHIPPING_INSTRUCTION';
+
+export interface DocumentTemplate {
+  id: string;
+  name: string;
+  docType: TemplateDocType;
+  docTypeLabel: string;
+  description: string;
+  version: string;
+  isShiplotMaster: boolean; // Created by Shiplot Admin
+  isDefault: boolean; // Default format
+  companyId?: string; // If company-specific customized variant
+  htmlContent: string;
+  availableTags: string[];
+  lastUpdated: string;
+  author: string; // 'Shiplot SuperAdmin' or Company Name
 }
 
 export interface RolePermissions {
@@ -54,6 +121,21 @@ export interface RoleItem {
   permissions: RolePermissions;
 }
 
+export type AuditSeverity = 'info' | 'warning' | 'critical';
+
+export type AuditCategory =
+  | 'Shipments & B/L'
+  | 'Users & Security'
+  | 'Customs & Manifests'
+  | 'Finance & Billing'
+  | 'Documents & Templates'
+  | 'Containers & Gate Pass'
+  | 'Tenant Management'
+  | 'Platform Security'
+  | 'EDI & Telemetry';
+
+export type AuditScope = 'NVOCC' | 'SHIPLOT_PLATFORM' | 'BOTH';
+
 export interface AuditLog {
   id: string;
   timestamp: string;
@@ -61,7 +143,14 @@ export interface AuditLog {
   tenantName: string;
   action: string;
   user: string;
-  severity: 'info' | 'warning' | 'critical';
+  severity: AuditSeverity;
+  category?: AuditCategory;
+  scope?: AuditScope;
+  ipAddress?: string;
+  station?: string;
+  details?: string;
+  targetRef?: string;
+  status?: 'Success' | 'Warning' | 'Blocked' | 'Flagged';
 }
 
 export interface MonthlyMetric {
@@ -194,6 +283,7 @@ export interface Shipment {
   pod: string;
   podCode: string;
   carrier: string;
+  carrierCode?: string;
   vesselName: string;
   voyageNo: string;
   etd: string;
@@ -223,6 +313,91 @@ export interface Booking {
   targetEtd: string;
   status: 'Pending Review' | 'Approved' | 'Declined';
   totalFreightUsd: number;
+  // Detailed Operational Specifications
+  shipperAddress?: string;
+  shipperPhone?: string;
+  shipperEmail?: string;
+  shipperTaxId?: string;
+  consigneeAddress?: string;
+  consigneePhone?: string;
+  consigneeEmail?: string;
+  consigneeTaxId?: string;
+  notifyPartyName?: string;
+  notifyPartyAddress?: string;
+  contractNo?: string;
+  tradeLane?: string;
+  placeOfReceipt?: string;
+  placeOfDelivery?: string;
+  targetEta?: string;
+  cargoCutOff?: string;
+  siCutOff?: string;
+  vgmCutOff?: string;
+  grossWeightKg?: number;
+  tareWeightKg?: number;
+  vgmKg?: number;
+  vgmMethod?: string;
+  cbmVolume?: number;
+  revenueTons?: number;
+  packagesCount?: string;
+  hsCode?: string;
+  incoterms?: string;
+  freightTerms?: 'FREIGHT PREPAID' | 'FREIGHT COLLECT';
+  demurrageFreeDays?: number;
+  detentionFreeDays?: number;
+  emptyDepot?: string;
+  cfsOrigin?: string;
+  cfsDestination?: string;
+  groupageLotNo?: string;
+  masterBlNo?: string;
+  masterContainerNo?: string;
+  isDangerousGoods?: boolean;
+  dgDetails?: string;
+  isReefer?: boolean;
+  reeferDetails?: string;
+  blType?: string;
+  specialInstructions?: string;
+  // Extended Maritime Fields
+  cargoReadyDate?: string;
+  bookingExpiryDate?: string;
+  forwarderName?: string;
+  forwarderLicenseNo?: string;
+  forwarderContact?: string;
+  movementType?: string;
+  quotationRef?: string;
+  shipperRef?: string;
+  coLoaderRef?: string;
+  coLoaderMasterBookingNo?: string;
+  lcNumber?: string;
+  lcIssuingBank?: string;
+  serviceLoop?: string;
+  polTerminal?: string;
+  podTerminal?: string;
+  isTransshipment?: boolean;
+  transshipmentPort?: string;
+  customsCutOff?: string;
+  emptyReleaseRef?: string;
+  emptyPickupDate?: string;
+  earliestReturnDate?: string;
+  haulageMode?: string;
+  truckingCompany?: string;
+  driverCnic?: string;
+  trailerPlateNo?: string;
+  solasStation?: string;
+  scaleCertNo?: string;
+  vgmSignatory?: string;
+  declaredValueUsd?: number;
+  insurancePolicyNo?: string;
+  currency?: string;
+  cfsOriginBay?: string;
+  cfsAppointmentId?: string;
+  cfsDestBay?: string;
+  stuffingDate?: string;
+  destripDate?: string;
+  ispm15Certified?: boolean;
+  wpmTreatment?: string;
+  destAgentName?: string;
+  destAgentPhone?: string;
+  destAgentEmail?: string;
 }
 
 export interface Invoice {

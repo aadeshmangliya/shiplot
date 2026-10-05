@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import {
   FileText,
@@ -8,10 +9,12 @@ import {
   Search,
   CheckCircle,
   Ship,
-  FileCheck
+  FileCheck,
+  LayoutTemplate
 } from 'lucide-react';
 
 export const BillOfLadingPage: React.FC = () => {
+  const navigate = useNavigate();
   const { shipments, setSelectedShipmentForBl, currentCompany } = useApp();
   const [search, setSearch] = useState('');
 
@@ -48,6 +51,14 @@ export const BillOfLadingPage: React.FC = () => {
             Issue House Bills of Lading (HBL) and Master Bills (MBL) certified under FMC License #{currentCompany.registrationNo}
           </p>
         </div>
+
+        <button
+          onClick={() => navigate('/templates')}
+          className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-neutral-900 hover:bg-neutral-800 text-white dark:bg-white dark:hover:bg-neutral-100 dark:text-neutral-950 font-mono text-xs font-bold shadow-xs transition-colors cursor-pointer self-start sm:self-auto"
+        >
+          <LayoutTemplate className="w-4 h-4" />
+          <span>Choose B/L Template Format →</span>
+        </button>
       </div>
 
       {/* FMC Compliance Banner */}

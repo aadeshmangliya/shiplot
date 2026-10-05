@@ -18,7 +18,8 @@ import {
   FileCheck,
   Package,
   Box,
-  Truck
+  Truck,
+  LayoutTemplate
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
@@ -159,13 +160,23 @@ export const DeliveryOrderPage: React.FC = () => {
           </p>
         </div>
 
-        <button
-          onClick={handleOpenCreateForm}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-xs font-mono font-bold bg-neutral-950 hover:bg-neutral-800 text-white dark:bg-white dark:hover:bg-neutral-200 dark:text-neutral-950 transition-all shadow-xs cursor-pointer self-start sm:self-auto"
-        >
-          {canGenerate ? <Plus className="w-4 h-4" /> : <Lock className="w-4 h-4" />}
-          <span>+ Generate Delivery Order</span>
-        </button>
+        <div className="flex items-center gap-2 self-start sm:self-auto">
+          <button
+            onClick={() => navigate('/templates')}
+            className="flex items-center gap-1.5 px-3.5 py-2.5 rounded-lg text-xs font-mono font-bold border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-700 text-neutral-800 dark:text-neutral-200 transition-all shadow-xs cursor-pointer"
+          >
+            <LayoutTemplate className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+            <span>D.O. Formats</span>
+          </button>
+
+          <button
+            onClick={handleOpenCreateForm}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-xs font-mono font-bold bg-neutral-950 hover:bg-neutral-800 text-white dark:bg-white dark:hover:bg-neutral-200 dark:text-neutral-950 transition-all shadow-xs cursor-pointer"
+          >
+            {canGenerate ? <Plus className="w-4 h-4" /> : <Lock className="w-4 h-4" />}
+            <span>+ Generate Delivery Order</span>
+          </button>
+        </div>
       </div>
 
       {/* Role Permission Alert */}

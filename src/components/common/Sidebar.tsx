@@ -27,7 +27,10 @@ import {
   Warehouse,
   Ticket,
   FileSpreadsheet,
-  FileCheck2
+  FileCheck2,
+  LayoutTemplate,
+  ShieldCheck,
+  Shield
 } from 'lucide-react';
 
 export const Sidebar: React.FC = () => {
@@ -72,14 +75,17 @@ export const Sidebar: React.FC = () => {
         { to: '/finance', label: 'Finance & Invoicing', icon: DollarSign, badge: unpaidInvoices > 0 ? unpaidInvoices : undefined, badgeColor: 'bg-blue-500' },
         { to: '/partners', label: 'Trade Partners', icon: Users2 },
         { to: '/reports', label: 'Throughput Analytics', icon: BarChart3 },
-        { to: '/users', label: 'RBAC & Permissions', icon: Lock },
-        { to: '/settings', label: 'NVOCC Carrier Settings', icon: Settings }
+        { to: '/templates', label: 'Document Templates', icon: LayoutTemplate },
+        { to: '/users', label: 'User Logins & RBAC', icon: Lock },
+        { to: '/settings', label: 'Carrier Profile & FMC', icon: Settings },
+        { to: '/audit-logs', label: 'Company Audit Trail', icon: ShieldCheck, badge: 'AUDIT', badgeColor: 'bg-emerald-600' }
       ]
     },
     {
       title: 'PORTALS & PLATFORM',
       items: [
         { to: '/platform-admin', label: 'SaaS Platform Admin', icon: Server, badge: 'ROOT', badgeColor: 'bg-purple-600' },
+        { to: '/platform-admin/audit', label: 'Shiplot Global Audit', icon: Shield, badge: 'SAAS', badgeColor: 'bg-purple-700' },
         { to: '/portal/track', label: 'Public Cargo Track', icon: ExternalLink },
         { to: '/portal/shipper', label: 'Shipper Portal', icon: ExternalLink },
         { to: '/portal/consignee', label: 'Consignee Portal', icon: ExternalLink },

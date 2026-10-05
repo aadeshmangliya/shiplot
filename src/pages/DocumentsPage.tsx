@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import {
   Files,
@@ -15,11 +16,13 @@ import {
   Building2,
   Calendar,
   Lock,
-  ArrowRight
+  ArrowRight,
+  LayoutTemplate
 } from 'lucide-react';
 
 export const DocumentsPage: React.FC = () => {
   const { currentCompany } = useApp();
+  const navigate = useNavigate();
   const [search, setSearch] = useState('');
   const [docCategory, setDocCategory] = useState('All');
   const [selectedDoc, setSelectedDoc] = useState<any | null>(null);
@@ -217,6 +220,14 @@ export const DocumentsPage: React.FC = () => {
             Bills of Lading, Delivery Orders, Debit/Credit Notes, Disbursement Accounts (PDA/FDA), and Port/Sailing Clearances
           </p>
         </div>
+
+        <button
+          onClick={() => navigate('/templates')}
+          className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-neutral-900 hover:bg-neutral-800 text-white dark:bg-white dark:hover:bg-neutral-100 dark:text-neutral-950 font-mono text-xs font-bold shadow-xs transition-colors cursor-pointer self-start sm:self-auto"
+        >
+          <LayoutTemplate className="w-4 h-4" />
+          <span>Manage Master Templates & Formats →</span>
+        </button>
       </div>
 
       {/* Filter and Search */}
