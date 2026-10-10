@@ -32,7 +32,10 @@ import {
   Layers3,
   Calculator,
   ShieldCheck,
-  FileCheck2
+  FileCheck2,
+  Box,
+  Ship,
+  Tag
 } from 'lucide-react';
 
 interface LclBookingFormProps {
@@ -52,12 +55,15 @@ interface CargoPieceItem {
 }
 
 export const LclBookingForm: React.FC<LclBookingFormProps> = ({ onClose, onBookingCreated }) => {
-  const { currentCompany, addBooking, addShipment, addAuditLog, currentUser, vessels } = useApp();
+  const { currentCompany, addBooking, addShipment, addAuditLog, currentUser, vessels, containers } = useApp();
 
   type LclTab = 'parties' | 'cfs' | 'dimensions' | 'groupage' | 'freight';
   const [activeTab, setActiveTab] = useState<LclTab>('parties');
   const [draftSavedMessage, setDraftSavedMessage] = useState<string | null>(null);
   const [bookingSubmitted, setBookingSubmitted] = useState<Booking | null>(null);
+
+  // Selected Master Container & Sourcing State
+  const [selectedMasterContainerId, setSelectedMasterContainerId] = useState<string>('');
 
   // ==========================================
   // TAB 1: COMMERCIAL PARTIES & CO-LOAD
@@ -1232,7 +1238,7 @@ export const LclBookingForm: React.FC<LclBookingFormProps> = ({ onClose, onBooki
                     LCL Consolidation Master Box & Groupage Lot Details
                   </span>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
                       <label className="block text-neutral-500 mb-1">CFS Groupage Lot No *</label>
                       <input
@@ -1240,29 +1246,168 @@ export const LclBookingForm: React.FC<LclBookingFormProps> = ({ onClose, onBooki
                         required
                         value={groupageLotNo}
                         onChange={e => setGroupageLotNo(e.target.value)}
-                        className="w-full px-3 py-1.5 rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white font-bold"
+                        className="w-full px-3 py-1.5 rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white font-bold font-mono"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-neutral-500 mb-1">Master Consolidation Container No</label>
+                      <label className="block text-neutral-500 mb-1">Master Ocean B/L (MBL) Ref *</label>
                       <input
                         type="text"
-                        value={masterContainerNo}
-                        onChange={e => setMasterContainerNo(e.target.value)}
-                        className="w-full px-3 py-1.5 rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-neutral-500 mb-1">Master Ocean B/L (MBL) Ref</label>
-                      <input
-                        type="text"
+                        required
                         value={masterBlNo}
                         onChange={e => setMasterBlNo(e.target.value)}
-                        className="w-full px-3 py-1.5 rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white"
+                        className="w-full px-3 py-1.5 rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white font-mono"
                       />
                     </div>
+                  </div>
+
+                  {/* Master Container Selection & Sourcing */}
+                  <div className="p-3.5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-800/40 space-y-3">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                      <div>
+                        <span className="text-xs font-bold text-neutral-900 dark:text-white flex items-center gap-1.5 font-sans">
+                          <Box className="w-3.5 h-3.5 text-purple-500" />
+                          Master Consolidation Container Sourcing (Owned vs Leased Sourcing)
+                        </span>
+                        <p className="text-[11px] text-neutral-500 font-mono">
+                          Assign the physical Master Box for groupage stuffing and indicate if sourced from company fleet or 3rd-party carrier pool.
+                        </p>
+                      </div>
+
+                      {selectedMasterContainerId && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSelectedMasterContainerId('');
+                          }}
+                          className="text-[11px] text-rose-500 hover:underline cursor-pointer self-start sm:self-auto"
+                        >
+                          Reset to Custom Box
+                        </button>
+                      )}
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-neutral-500 mb-1 text-[11px]">Select from Fleet Inventory</label>
+                        <select
+                          value={selectedMasterContainerId}
+                          onChange={e => {
+                            const id = e.target.value;
+                            setSelectedMasterContainerId(id);
+                            if (id) {
+                              const found = containers.find(c => c.id === id);
+                              if (found) {
+                                setMasterContainerNo(`${found.containerNo} (${found.type} Consolidation)`);
+                                setMasterSealNo(found.sealNo || 'SL-884190');
+                              }
+                            }
+                          }}
+                          className="w-full px-3 py-1.5 rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white font-mono text-xs font-semibold focus:outline-hidden"
+                        >
+                          <option value="">-- Choose Master Container from Fleet --</option>
+                          
+                          <optgroup label="🏢 Company Owned Containers (SOC Master Box)">
+                            {containers
+                              .filter(c => !c.isSold && (c.sourceProvider?.toLowerCase().includes('owned') || c.ownership === 'SOC'))
+                              .map(c => (
+                                <option key={c.id} value={c.id}>
+                                  {c.containerNo} ({c.type}) • [Company Owned SOC] • {c.currentLocation || 'Depot'}
+                                </option>
+                              ))}
+                          </optgroup>
+
+                          <optgroup label="🚢 Leased / Third-Party Containers (COC Consolidation)">
+                            {containers
+                              .filter(c => !c.isSold && (c.commercialPurpose === 'Leased-In' || c.sourceProvider?.toLowerCase().includes('leas') || c.ownership === 'COC'))
+                              .map(c => (
+                                <option key={c.id} value={c.id}>
+                                  {c.containerNo} ({c.type}) • [Leased-In: {c.sourceProvider || 'Triton'}] • {c.currentLocation || 'Depot'}
+                                </option>
+                              ))}
+                          </optgroup>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block text-neutral-500 mb-1 text-[11px]">Master Container Number & Seal</label>
+                        <div className="flex gap-2">
+                          <input
+                            type="text"
+                            value={masterContainerNo}
+                            onChange={e => setMasterContainerNo(e.target.value)}
+                            className="flex-1 px-3 py-1.5 rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white font-mono font-bold"
+                            placeholder="e.g. PCXU1002910 (40HC)"
+                          />
+                          <input
+                            type="text"
+                            value={masterSealNo}
+                            onChange={e => setMasterSealNo(e.target.value)}
+                            className="w-28 px-2 py-1.5 rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white font-mono text-[11px]"
+                            placeholder="Seal No"
+                            title="Master Seal Number"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Sourcing Verification Badge */}
+                    {(() => {
+                      const selectedCnt = containers.find(c => c.id === selectedMasterContainerId);
+                      const isCompanyOwned = selectedCnt ? (selectedCnt.ownership === 'SOC' || selectedCnt.sourceProvider?.toLowerCase().includes('owned')) : masterContainerNo.startsWith('PCXU');
+
+                      return (
+                        <div className="p-3 rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 space-y-2">
+                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-neutral-100 dark:border-neutral-800 pb-2">
+                            <div className="flex items-center gap-2">
+                              {isCompanyOwned ? (
+                                <span className="px-2.5 py-1 rounded text-[11px] font-bold bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800 flex items-center gap-1 font-sans">
+                                  <ShieldCheck className="w-3.5 h-3.5" />
+                                  Company Owned Master Container (SOC Consolidation Box)
+                                </span>
+                              ) : (
+                                <span className="px-2.5 py-1 rounded text-[11px] font-bold bg-blue-100 dark:bg-blue-950/60 text-blue-800 dark:text-blue-300 border border-blue-300 dark:border-blue-800 flex items-center gap-1 font-sans">
+                                  <Ship className="w-3.5 h-3.5" />
+                                  Third-Party Leased / Carrier Provided Master Box (COC)
+                                </span>
+                              )}
+                            </div>
+
+                            <span className="text-[11px] font-mono text-neutral-500 font-bold">
+                              MBL Box: {masterContainerNo.split(' ')[0]}
+                            </span>
+                          </div>
+
+                          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[11px] font-mono">
+                            <div>
+                              <span className="text-neutral-400 block text-[10px]">Equipment Sourcing</span>
+                              <span className="font-bold text-neutral-900 dark:text-white">
+                                {isCompanyOwned ? 'Own Fleet Direct Asset' : (selectedCnt?.sourceProvider || 'Carrier Pool (Maersk / Triton)')}
+                              </span>
+                            </div>
+                            <div>
+                              <span className="text-neutral-400 block text-[10px]">CSC Safety Plate</span>
+                              <span className="font-bold text-neutral-900 dark:text-white">
+                                {selectedCnt?.cscPlateNumber || 'CSC-BV-2023-88194'}
+                              </span>
+                            </div>
+                            <div>
+                              <span className="text-neutral-400 block text-[10px]">Condition Grade</span>
+                              <span className="font-bold text-emerald-600 dark:text-emerald-400">
+                                {selectedCnt?.conditionGrade || 'Cargo Worthy (CW)'}
+                              </span>
+                            </div>
+                            <div>
+                              <span className="text-neutral-400 block text-[10px]">Stuffing Location</span>
+                              <span className="font-bold text-neutral-900 dark:text-white truncate block">
+                                {selectedCnt?.currentLocation || cfsOrigin}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })()}
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">

@@ -202,6 +202,9 @@ export interface Vessel {
   portRotation: PortRotation[];
 }
 
+export type ContainerCommercialPurpose = 'Self-Use' | 'For-Booking' | 'For-Sale' | 'Leased-In';
+export type ContainerConditionGrade = 'IICL-5' | 'Cargo Worthy (CW)' | 'Wind & Water Tight (WWT)' | 'As-Is';
+
 export interface Container {
   id: string;
   containerNo: string;
@@ -223,6 +226,66 @@ export interface Container {
   tareWeightKg?: number;
   maxPayloadKg?: number;
   clientOwner?: string;
+  // Extended Fleet, Asset & Photo Management
+  images?: string[]; // Up to 3 high-res photos
+  imageCaptions?: string[];
+  commercialPurpose?: ContainerCommercialPurpose;
+  conditionGrade?: ContainerConditionGrade;
+  salePriceUsd?: number;
+  leaseDailyRateUsd?: number;
+  sourceProvider?: string; // 'Company Owned (Direct Title)' or 'Triton Leasing' etc.
+  cscPlateNumber?: string;
+  manufactureYear?: number;
+  manufacturer?: string;
+  lastSurveyDate?: string;
+  yardSlot?: string;
+  floorType?: 'Marine Hardwood' | 'Bamboo Composite' | 'Steel Plate';
+  isSold?: boolean;
+  soldToParty?: string;
+  soldPriceUsd?: number;
+  soldDate?: string;
+  leaseClient?: string;
+}
+
+// LoLo (Lift-on / Lift-off) Handling Types
+export type LoloLiftType =
+  | 'Inbound Lift-Off (Trailer to Ground)'
+  | 'Outbound Lift-On (Ground to Chassis)'
+  | 'Yard Restack / Shift'
+  | 'CFS Destuffing / Stuffing Lift';
+
+export interface LoloTicket {
+  id: string;
+  ticketNo: string;
+  containerNo: string;
+  containerType: string;
+  liftType: LoloLiftType;
+  status: 'Laden' | 'Empty';
+  equipmentType: 'Reach Stacker' | 'Top Loader' | 'RTG Crane' | 'Heavy Forklift';
+  equipmentId: string;
+  operatorName: string;
+  truckNo: string;
+  transporter: string;
+  loloFeeUsd: number;
+  paymentMode: 'Billed to Invoice' | 'Prepaid by Shipper' | 'Cash at Gate' | 'Included in D/O';
+  isPaid: boolean;
+  timestamp: string;
+  depotName: string;
+  receiptOrBlRef?: string;
+  remarks?: string;
+}
+
+export interface LoloTariff {
+  id: string;
+  category: string;
+  rateLaden20: number;
+  rateLaden40: number;
+  rateEmpty20: number;
+  rateEmpty40: number;
+  hazardousSurcharge: number;
+  overweightSurcharge: number;
+  restackFee: number;
+  currency: string;
 }
 
 export type GatePassType = 'Gate In (Laden)' | 'Gate In (Empty)' | 'Gate Out (Laden)' | 'Gate Out (Empty)';
@@ -268,6 +331,14 @@ export interface WarehouseCargoItem {
   accruedChargesUsd: number;
   status: 'Stored' | 'Staged for Loading' | 'Dispatched';
   associatedContainerNo?: string;
+  // LoLo & Customs handling specs
+  loloChargeInboundUsd?: number;
+  loloChargeOutboundUsd?: number;
+  loloPaymentStatus?: 'Paid' | 'Pending' | 'Billed on Invoice';
+  customsBondNumber?: string;
+  freeDaysGranted?: number;
+  handlingStatus?: 'Unloaded' | 'Racked' | 'Cross-Docked' | 'Released';
+  hsCode?: string;
 }
 
 export interface Shipment {

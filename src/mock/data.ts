@@ -30,6 +30,9 @@ import {
   initialAgencyPartners
 } from './srsMockData';
 
+import { initialLoloTariffs, initialLoloTickets } from './loloMockData';
+import { getPhotosForContainer } from './containerPhotos';
+
 export {
   initialIgms,
   initialEgms,
@@ -40,9 +43,11 @@ export {
   initialLedgerEntries,
   initialDisbursementAccounts,
   initialDebitCreditNotes,
-  initialSrsRoles,
   initialPakistanCustomsCases,
-  initialAgencyPartners
+  initialAgencyPartners,
+  initialSrsRoles,
+  initialLoloTariffs,
+  initialLoloTickets
 };
 
 const baseCompanies = rawMockData.companies as Company[];
@@ -102,11 +107,22 @@ export const initialContainers: Container[] = [
     grossWeightKg: 14200,
     vgmKg: 18020,
     locationStatus: 'In Warehouse',
-    ownership: 'SOC',
+    ownership: 'COC',
     currentLocation: 'Pacific Crest Central Warehouse, Bay 4',
     tareWeightKg: 3820,
     maxPayloadKg: 28600,
-    clientOwner: 'Pacific Precision Electronics'
+    clientOwner: 'Pacific Precision Electronics',
+    images: getPhotosForContainer('40HC', 'cnt_wh_1'),
+    imageCaptions: ['Door & CSC Safety Plate', 'Exterior Portside Panels', 'Interior Treated Plywood Floor'],
+    commercialPurpose: 'Self-Use',
+    conditionGrade: 'IICL-5',
+    sourceProvider: 'Company Owned (Direct Asset Title)',
+    cscPlateNumber: 'CSC-BV-2023-88194',
+    manufactureYear: 2023,
+    manufacturer: 'CIMC Container Holdings',
+    lastSurveyDate: '2026-06-15',
+    yardSlot: 'Bay 04, Row 02, Tier 1',
+    floorType: 'Marine Hardwood'
   },
   {
     id: 'cnt_wh_2',
@@ -124,11 +140,23 @@ export const initialContainers: Container[] = [
     grossWeightKg: 9800,
     vgmKg: 12150,
     locationStatus: 'In Warehouse',
-    ownership: 'SOC',
+    ownership: 'COC',
     currentLocation: 'Waigaoqiao CFS Storage Zone B-03',
     tareWeightKg: 2350,
     maxPayloadKg: 28130,
-    clientOwner: 'Apex Global Trade Ltd'
+    clientOwner: 'Apex Global Trade Ltd',
+    images: getPhotosForContainer('20GP', 'cnt_wh_2'),
+    imageCaptions: ['Front Locking Gear & Seal Latch', 'Side Rib Corrugation', 'Interior Clean Dry Deck'],
+    commercialPurpose: 'For-Sale',
+    conditionGrade: 'Cargo Worthy (CW)',
+    salePriceUsd: 2250,
+    sourceProvider: 'Company Owned (Available for Trade)',
+    cscPlateNumber: 'CSC-LR-2021-99201',
+    manufactureYear: 2021,
+    manufacturer: 'Singamas Container Holdings',
+    lastSurveyDate: '2026-08-10',
+    yardSlot: 'Bay 12, Row 05, Tier 2',
+    floorType: 'Bamboo Composite'
   },
   {
     id: 'cnt_wh_3',
@@ -146,11 +174,23 @@ export const initialContainers: Container[] = [
     grossWeightKg: 16400,
     vgmKg: 20950,
     locationStatus: 'In Warehouse',
-    ownership: 'SOC',
+    ownership: 'COC',
     currentLocation: 'Irvine Temperature Distribution Yard, Plug #12',
     tareWeightKg: 4550,
     maxPayloadKg: 29450,
-    clientOwner: 'BioMed Therapeutics'
+    clientOwner: 'BioMed Therapeutics',
+    images: getPhotosForContainer('40RF', 'cnt_wh_3'),
+    imageCaptions: ['Carrier Transicold Machinery Door', 'Insulated Stainless Steel Body', 'Aluminum T-Bar Floor Profile'],
+    commercialPurpose: 'For-Booking',
+    conditionGrade: 'IICL-5',
+    leaseDailyRateUsd: 48,
+    sourceProvider: 'Company Owned (Cold Chain Fleet)',
+    cscPlateNumber: 'CSC-DNV-2024-11029',
+    manufactureYear: 2024,
+    manufacturer: 'Maersk Container Industry (MCI)',
+    lastSurveyDate: '2026-09-02',
+    yardSlot: 'Reefer Grid R-12',
+    floorType: 'Steel Plate'
   },
   {
     id: 'cnt_wh_4',
@@ -172,7 +212,19 @@ export const initialContainers: Container[] = [
     currentLocation: 'Keppel Staging Yard Zone D',
     tareWeightKg: 3820,
     maxPayloadKg: 28600,
-    clientOwner: 'Pacific Crest Freight'
+    clientOwner: 'Pacific Crest Freight',
+    images: getPhotosForContainer('40HC', 'cnt_wh_4'),
+    imageCaptions: ['High-Cube Door Header & Gaskets', 'Full Length Side Profile', 'Plywood Deck & Lashing Rings'],
+    commercialPurpose: 'For-Booking',
+    conditionGrade: 'IICL-5',
+    leaseDailyRateUsd: 24,
+    sourceProvider: 'Company Owned (Commercial Charter)',
+    cscPlateNumber: 'CSC-GL-2022-44910',
+    manufactureYear: 2022,
+    manufacturer: 'COSCO Shipping Heavy Industry',
+    lastSurveyDate: '2026-07-22',
+    yardSlot: 'Zone D, Stack 08, Tier 1',
+    floorType: 'Marine Hardwood'
   },
 
   // At Port (At terminal / port berths / container stacks)
@@ -196,7 +248,18 @@ export const initialContainers: Container[] = [
     currentLocation: 'Port of Los Angeles, Pier 400 Stack 4B',
     tareWeightKg: 3820,
     maxPayloadKg: 28600,
-    clientOwner: 'Shenzhen Microelectronics'
+    clientOwner: 'Shenzhen Microelectronics',
+    images: getPhotosForContainer('40HC', 'cnt_port_1'),
+    imageCaptions: ['Terminal Discharged Door View', 'Left Panel Markings', 'Floor Condition Post-Discharge'],
+    commercialPurpose: 'Self-Use',
+    conditionGrade: 'Cargo Worthy (CW)',
+    sourceProvider: 'Company Owned (Active Voyage)',
+    cscPlateNumber: 'CSC-ABS-2020-77192',
+    manufactureYear: 2020,
+    manufacturer: 'CIMC Holdings',
+    lastSurveyDate: '2026-05-18',
+    yardSlot: 'Pier 400, Stack 4B',
+    floorType: 'Marine Hardwood'
   },
   {
     id: 'cnt_port_2',
@@ -214,11 +277,23 @@ export const initialContainers: Container[] = [
     grossWeightKg: 18400,
     vgmKg: 20750,
     locationStatus: 'At Port',
-    ownership: 'COC',
+    ownership: 'SOC',
     currentLocation: 'Port of Shanghai, Yangshan Phase IV Yard G-11',
     tareWeightKg: 2350,
     maxPayloadKg: 28130,
-    clientOwner: 'Eastern Textile Mills'
+    clientOwner: 'Eastern Textile Mills',
+    images: getPhotosForContainer('20GP', 'cnt_port_2'),
+    imageCaptions: ['CSC Plate & Cargo Worthy Stamp', 'Right Exterior Wall', 'Interior Heavy-Duty Timber'],
+    commercialPurpose: 'For-Sale',
+    conditionGrade: 'Wind & Water Tight (WWT)',
+    salePriceUsd: 1850,
+    sourceProvider: 'Sourced from Shipper / Depreciated Fleet',
+    cscPlateNumber: 'CSC-NK-2019-33821',
+    manufactureYear: 2019,
+    manufacturer: 'CXIC Group Containers',
+    lastSurveyDate: '2026-04-12',
+    yardSlot: 'Yard G-11, Block 2',
+    floorType: 'Marine Hardwood'
   },
   {
     id: 'cnt_port_3',

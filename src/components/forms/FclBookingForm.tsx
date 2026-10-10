@@ -30,7 +30,9 @@ import {
   Mail,
   MapPin,
   Clock,
-  Ticket
+  Ticket,
+  Tag,
+  ShieldCheck
 } from 'lucide-react';
 
 interface FclBookingFormProps {
@@ -49,12 +51,15 @@ interface ContainerSlot {
 }
 
 export const FclBookingForm: React.FC<FclBookingFormProps> = ({ onClose, onBookingCreated }) => {
-  const { currentCompany, addBooking, addShipment, addContainer, addAuditLog, currentUser, vessels } = useApp();
+  const { currentCompany, addBooking, addShipment, addContainer, addAuditLog, currentUser, vessels, containers, updateContainerLocation } = useApp();
 
   type FclTab = 'parties' | 'voyage' | 'equipment' | 'cargo' | 'freight';
   const [activeTab, setActiveTab] = useState<FclTab>('parties');
   const [draftSavedMessage, setDraftSavedMessage] = useState<string | null>(null);
   const [bookingSubmitted, setBookingSubmitted] = useState<Booking | null>(null);
+
+  // Selected Fleet Container & Sourcing State
+  const [selectedFleetContainerId, setSelectedFleetContainerId] = useState<string>('');
 
   // ==========================================
   // TAB 1: COMMERCIAL PARTIES & SERVICE CONTRACT
@@ -392,9 +397,17 @@ export const FclBookingForm: React.FC<FclBookingFormProps> = ({ onClose, onBooki
     };
     addShipment(newShipment);
 
-    // Auto-generate Equipment Container records
+    // Allocate or auto-generate Equipment Container records
+    if (selectedFleetContainerId) {
+      updateContainerLocation(selectedFleetContainerId, 'Booked', `${pol} (Allocated to ${bookingNo})`);
+    }
+
     containerSlots.forEach((slot, sIdx) => {
       for (let i = 0; i < slot.quantity; i++) {
+        // If first box was selected from fleet, skip duplicating
+        if (sIdx === 0 && i === 0 && selectedFleetContainerId) {
+          continue;
+        }
         const prefix = carrier.includes('MSC') ? 'MSCU' : 'PCXU';
         const randomNum = Math.floor(1000000 + Math.random() * 9000000);
         const newCnt: Container = {
@@ -1112,6 +1125,151 @@ export const FclBookingForm: React.FC<FclBookingFormProps> = ({ onClose, onBooki
                       <Plus className="w-3.5 h-3.5" />
                       <span>Add Equipment Size</span>
                     </button>
+                  </div>
+
+                  {/* Container Sourcing Dropdown & Verification */}
+                  <div className="p-3.5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-800/40 space-y-3">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                      <div>
+                        <span className="text-xs font-bold text-neutral-900 dark:text-white flex items-center gap-1.5 font-sans">
+                          <Box className="w-3.5 h-3.5 text-blue-500" />
+                          Assign Physical Fleet Container & Equipment Sourcing
+                        </span>
+                        <p className="text-[11px] text-neutral-500 font-mono">
+                          Select an available box from active fleet inventory to verify whether company used its own container or sourced from a third-party lessor.
+                        </p>
+                      </div>
+
+                      {selectedFleetContainerId && (
+                        <button
+                          type="button"
+                          onClick={() => setSelectedFleetContainerId('')}
+                          className="text-[11px] text-rose-500 hover:underline cursor-pointer self-start sm:self-auto"
+                        >
+                          Clear Selection
+                        </button>
+                      )}
+                    </div>
+
+                    <div>
+                      <select
+                        value={selectedFleetContainerId}
+                        onChange={e => {
+                          const id = e.target.value;
+                          setSelectedFleetContainerId(id);
+                          if (id) {
+                            const found = containers.find(c => c.id === id);
+                            if (found && containerSlots.length > 0) {
+                              const is20 = found.type.includes('20');
+                              setContainerSlots(prev => prev.map((s, idx) => idx === 0 ? {
+                                ...s,
+                                type: found.type,
+                                ownership: found.ownership || (found.sourceProvider?.toLowerCase().includes('owned') ? 'SOC' : 'COC'),
+                                tareWeightKg: found.tareWeightKg || (is20 ? 2280 : 3820),
+                                maxPayloadKg: found.maxPayloadKg || (is20 ? 28200 : 28680)
+                              } : s));
+                            }
+                          }
+                        }}
+                        className="w-full px-3 py-2 rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white font-mono text-xs font-semibold focus:outline-hidden"
+                      >
+                        <option value="">-- Choose Container from Fleet Inventory (Owned vs Leased vs Self-Use) --</option>
+                        
+                        <optgroup label="🏢 Company Owned Containers (SOC - Own Asset Fleet)">
+                          {containers
+                            .filter(c => !c.isSold && (c.sourceProvider?.toLowerCase().includes('owned') || c.ownership === 'SOC'))
+                            .map(c => (
+                              <option key={c.id} value={c.id}>
+                                {c.containerNo} ({c.type}) • [Company Owned SOC] • {c.conditionGrade || 'CW'} • {c.currentLocation || 'Depot'} • {c.commercialPurpose || 'Active'}
+                              </option>
+                            ))}
+                        </optgroup>
+
+                        <optgroup label="🚢 Leased / Third-Party Containers (COC - Line/Lessor Equipment)">
+                          {containers
+                            .filter(c => !c.isSold && (c.commercialPurpose === 'Leased-In' || c.sourceProvider?.toLowerCase().includes('leas') || c.ownership === 'COC'))
+                            .map(c => (
+                              <option key={c.id} value={c.id}>
+                                {c.containerNo} ({c.type}) • [Leased-In: {c.sourceProvider || 'Triton Leasing'}] • {c.currentLocation || 'Depot'}
+                              </option>
+                            ))}
+                        </optgroup>
+
+                        <optgroup label="🛠️ Company Self-Use Operations Fleet">
+                          {containers
+                            .filter(c => !c.isSold && c.commercialPurpose === 'Self-Use')
+                            .map(c => (
+                              <option key={c.id} value={c.id}>
+                                {c.containerNo} ({c.type}) • [Self-Use Fleet] • {c.currentLocation || 'In Warehouse'}
+                              </option>
+                            ))}
+                        </optgroup>
+                      </select>
+                    </div>
+
+                    {/* Sourcing Status Badge & Asset Breakdown */}
+                    {(() => {
+                      const selectedCnt = containers.find(c => c.id === selectedFleetContainerId);
+                      if (!selectedCnt) return null;
+                      const isCompanyOwned = selectedCnt.ownership === 'SOC' || selectedCnt.sourceProvider?.toLowerCase().includes('owned');
+                      const isLeased = selectedCnt.commercialPurpose === 'Leased-In' || selectedCnt.sourceProvider?.toLowerCase().includes('leas') || selectedCnt.ownership === 'COC';
+
+                      return (
+                        <div className="p-3 rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 space-y-2">
+                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-neutral-100 dark:border-neutral-800 pb-2">
+                            <div className="flex items-center gap-2">
+                              {isCompanyOwned ? (
+                                <span className="px-2.5 py-1 rounded text-[11px] font-bold bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800 flex items-center gap-1 font-sans">
+                                  <ShieldCheck className="w-3.5 h-3.5" />
+                                  Company Owned Container (SOC Fleet - Direct Title Asset)
+                                </span>
+                              ) : isLeased ? (
+                                <span className="px-2.5 py-1 rounded text-[11px] font-bold bg-blue-100 dark:bg-blue-950/60 text-blue-800 dark:text-blue-300 border border-blue-300 dark:border-blue-800 flex items-center gap-1 font-sans">
+                                  <Ship className="w-3.5 h-3.5" />
+                                  Third-Party Leased Equipment (COC - Sourced from Outside Lessor)
+                                </span>
+                              ) : (
+                                <span className="px-2.5 py-1 rounded text-[11px] font-bold bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-800 flex items-center gap-1 font-sans">
+                                  <Tag className="w-3.5 h-3.5" />
+                                  Re-allocated Self-Use Asset
+                                </span>
+                              )}
+                            </div>
+
+                            <span className="text-[11px] font-mono text-neutral-500 font-bold">
+                              Box #{selectedCnt.containerNo}
+                            </span>
+                          </div>
+
+                          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[11px] font-mono">
+                            <div>
+                              <span className="text-neutral-400 block text-[10px]">Equipment Sourcing</span>
+                              <span className="font-bold text-neutral-900 dark:text-white">
+                                {isCompanyOwned ? 'Own Fleet (No Line Per-Diem)' : (selectedCnt.sourceProvider || 'Triton / SeaCo Lessor')}
+                              </span>
+                            </div>
+                            <div>
+                              <span className="text-neutral-400 block text-[10px]">CSC Safety Plate</span>
+                              <span className="font-bold text-neutral-900 dark:text-white">
+                                {selectedCnt.cscPlateNumber || 'CSC-BV-2023-88194'}
+                              </span>
+                            </div>
+                            <div>
+                              <span className="text-neutral-400 block text-[10px]">Condition Grade</span>
+                              <span className="font-bold text-emerald-600 dark:text-emerald-400">
+                                {selectedCnt.conditionGrade || 'Cargo Worthy (CW)'}
+                              </span>
+                            </div>
+                            <div>
+                              <span className="text-neutral-400 block text-[10px]">Depot / Slot Location</span>
+                              <span className="font-bold text-neutral-900 dark:text-white truncate block">
+                                {selectedCnt.currentLocation || 'Long Beach'} ({selectedCnt.yardSlot || 'Bay 04'})
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })()}
                   </div>
 
                   <div className="overflow-x-auto">

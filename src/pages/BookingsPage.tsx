@@ -148,166 +148,171 @@ export const BookingsPage: React.FC = () => {
         </div>
       )}
 
-      {/* Filter Toolbar */}
-      <div className="p-4 rounded-xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-xs flex flex-col md:flex-row gap-3 font-mono text-xs">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-2.5 w-4 h-4 text-neutral-400" />
-          <input
-            type="text"
-            placeholder="Search booking number, shipper, consignee, carrier, or port..."
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            className="w-full pl-9 pr-4 py-2 bg-neutral-50 dark:bg-neutral-800/60 border border-neutral-200 dark:border-neutral-700 rounded-lg text-neutral-900 dark:text-white placeholder-neutral-400 focus:outline-hidden"
-          />
-        </div>
+      {/* Only show Search Toolbar & Bookings List Table when NO form is open */}
+      {activeInlineForm === 'NONE' && (
+        <>
+          {/* Filter Toolbar */}
+          <div className="p-4 rounded-xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-xs flex flex-col md:flex-row gap-3 font-mono text-xs">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-2.5 w-4 h-4 text-neutral-400" />
+              <input
+                type="text"
+                placeholder="Search booking number, shipper, consignee, carrier, or port..."
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                className="w-full pl-9 pr-4 py-2 bg-neutral-50 dark:bg-neutral-800/60 border border-neutral-200 dark:border-neutral-700 rounded-lg text-neutral-900 dark:text-white placeholder-neutral-400 focus:outline-hidden"
+              />
+            </div>
 
-        <div className="flex items-center gap-2">
-          {/* Mode Selector */}
-          <select
-            value={filterType}
-            onChange={e => setFilterType(e.target.value)}
-            className="px-3 py-2 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300"
-          >
-            <option value="All">All Freight Modes (FCL &amp; LCL)</option>
-            <option value="FCL">FCL (Full Container Load)</option>
-            <option value="LCL">LCL (CFS Groupage)</option>
-          </select>
+            <div className="flex items-center gap-2">
+              {/* Mode Selector */}
+              <select
+                value={filterType}
+                onChange={e => setFilterType(e.target.value)}
+                className="px-3 py-2 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300"
+              >
+                <option value="All">All Freight Modes (FCL &amp; LCL)</option>
+                <option value="FCL">FCL (Full Container Load)</option>
+                <option value="LCL">LCL (CFS Groupage)</option>
+              </select>
 
-          {/* Status Selector */}
-          <select
-            value={filterStatus}
-            onChange={e => setFilterStatus(e.target.value)}
-            className="px-3 py-2 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300"
-          >
-            <option value="All">All Booking Statuses</option>
-            <option value="Pending Review">Pending Review</option>
-            <option value="Approved">Approved / Allocated</option>
-          </select>
-        </div>
-      </div>
+              {/* Status Selector */}
+              <select
+                value={filterStatus}
+                onChange={e => setFilterStatus(e.target.value)}
+                className="px-3 py-2 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300"
+              >
+                <option value="All">All Booking Statuses</option>
+                <option value="Pending Review">Pending Review</option>
+                <option value="Approved">Approved / Allocated</option>
+              </select>
+            </div>
+          </div>
 
-      {/* Bookings List Table */}
-      <div className="rounded-xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-xs overflow-hidden">
-        <div className="px-4 py-3 border-b border-neutral-200 dark:border-neutral-800 flex items-center justify-between text-xs font-mono">
-          <span className="font-bold text-neutral-900 dark:text-white">
-            Active Freight Bookings ({filtered.length})
-          </span>
-          <span className="text-[11px] text-neutral-400">
-            Real-Time Carrier Space Allocation
-          </span>
-        </div>
+          {/* Bookings List Table */}
+          <div className="rounded-xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-xs overflow-hidden">
+            <div className="px-4 py-3 border-b border-neutral-200 dark:border-neutral-800 flex items-center justify-between text-xs font-mono">
+              <span className="font-bold text-neutral-900 dark:text-white">
+                Active Freight Bookings ({filtered.length})
+              </span>
+              <span className="text-[11px] text-neutral-400">
+                Real-Time Carrier Space Allocation
+              </span>
+            </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs font-mono">
-            <thead>
-              <tr className="bg-neutral-50 dark:bg-neutral-800/60 border-b border-neutral-200 dark:border-neutral-800 text-neutral-500 dark:text-neutral-400 text-[11px]">
-                <th className="py-3 px-4">Booking Ref / Date</th>
-                <th className="py-3 px-4">Shipper &amp; Consignee</th>
-                <th className="py-3 px-4">Mode &amp; Cargo Spec</th>
-                <th className="py-3 px-4">Origin / Dest (POL &rarr; POD)</th>
-                <th className="py-3 px-4">Liner &amp; Vessel</th>
-                <th className="py-3 px-4">Commercial Freight</th>
-                <th className="py-3 px-4 text-center">Status</th>
-                <th className="py-3 px-4 text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-neutral-100 dark:divide-neutral-800">
-              {filtered.length === 0 ? (
-                <tr>
-                  <td colSpan={8} className="py-12 text-center text-neutral-400 font-sans">
-                    <CalendarCheck className="w-8 h-8 mx-auto text-neutral-300 dark:text-neutral-600 mb-2" />
-                    <p className="font-semibold text-neutral-700 dark:text-neutral-300">No bookings found</p>
-                    <p className="text-xs text-neutral-400 mt-1">Click &quot;+ New FCL Booking&quot; or &quot;+ New LCL Booking&quot; to issue a new slot confirmation.</p>
-                  </td>
-                </tr>
-              ) : (
-                filtered.map(b => {
-                  const isPending = b.status === 'Pending Review';
-                  const isFcl = b.type === 'FCL';
-
-                  return (
-                    <tr
-                      key={b.id}
-                      className="hover:bg-neutral-50 dark:hover:bg-neutral-800/40 transition-colors"
-                    >
-                      <td className="py-3.5 px-4 font-bold text-neutral-900 dark:text-white">
-                        <div className="flex items-center gap-1.5">
-                          {isFcl ? (
-                            <Box className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
-                          ) : (
-                            <Boxes className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" />
-                          )}
-                          <span>{b.bookingNo}</span>
-                        </div>
-                        <div className="text-[10px] text-neutral-400 font-normal">{b.requestDate}</div>
-                      </td>
-
-                      <td className="py-3.5 px-4 max-w-[200px]">
-                        <div className="font-semibold text-neutral-900 dark:text-white font-sans truncate">{b.shipper}</div>
-                        <div className="text-[10px] text-neutral-400 font-sans truncate">to {b.consignee}</div>
-                      </td>
-
-                      <td className="py-3.5 px-4">
-                        <div className="font-bold text-neutral-800 dark:text-neutral-200">
-                          {b.containerQty}x {b.containerType}
-                        </div>
-                        <div className="text-[10px] text-neutral-400">
-                          {b.grossWeightKg ? `${b.grossWeightKg.toLocaleString()} KG` : ''}
-                          {b.cbmVolume ? ` · ${b.cbmVolume} CBM` : ''}
-                        </div>
-                      </td>
-
-                      <td className="py-3.5 px-4">
-                        <div className="truncate max-w-[170px] font-medium">{b.pol} &rarr; {b.pod}</div>
-                        <div className="text-[10px] text-neutral-400">ETD: {b.targetEtd}</div>
-                      </td>
-
-                      <td className="py-3.5 px-4">
-                        <div className="text-neutral-900 dark:text-white truncate max-w-[140px]">{b.carrier}</div>
-                        <div className="text-[10px] text-neutral-400">{b.targetVessel}</div>
-                      </td>
-
-                      <td className="py-3.5 px-4 font-bold text-neutral-900 dark:text-white whitespace-nowrap">
-                        ${b.totalFreightUsd.toLocaleString()} USD
-                      </td>
-
-                      <td className="py-3.5 px-4 text-center">
-                        <span
-                          className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                            isPending
-                              ? 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300'
-                              : 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
-                          }`}
-                        >
-                          {b.status}
-                        </span>
-                      </td>
-
-                      <td className="py-3.5 px-4 text-right space-x-1.5 whitespace-nowrap">
-                        <button
-                          onClick={() => setSelectedBookingForView(b)}
-                          className="px-2 py-1 rounded border border-neutral-300 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 text-[11px] font-semibold cursor-pointer"
-                        >
-                          View Details
-                        </button>
-
-                        {isPending && (
-                          <button
-                            onClick={() => approveBooking(b.id)}
-                            className="px-3 py-1 bg-neutral-950 hover:bg-neutral-800 text-white dark:bg-white dark:hover:bg-neutral-200 dark:text-neutral-950 font-sans font-medium text-[11px] rounded transition-colors cursor-pointer"
-                          >
-                            Approve
-                          </button>
-                        )}
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs font-mono">
+                <thead>
+                  <tr className="bg-neutral-50 dark:bg-neutral-800/60 border-b border-neutral-200 dark:border-neutral-800 text-neutral-500 dark:text-neutral-400 text-[11px]">
+                    <th className="py-3 px-4">Booking Ref / Date</th>
+                    <th className="py-3 px-4">Shipper &amp; Consignee</th>
+                    <th className="py-3 px-4">Mode &amp; Cargo Spec</th>
+                    <th className="py-3 px-4">Origin / Dest (POL &rarr; POD)</th>
+                    <th className="py-3 px-4">Liner &amp; Vessel</th>
+                    <th className="py-3 px-4">Commercial Freight</th>
+                    <th className="py-3 px-4 text-center">Status</th>
+                    <th className="py-3 px-4 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-neutral-100 dark:divide-neutral-800">
+                  {filtered.length === 0 ? (
+                    <tr>
+                      <td colSpan={8} className="py-12 text-center text-neutral-400 font-sans">
+                        <CalendarCheck className="w-8 h-8 mx-auto text-neutral-300 dark:text-neutral-600 mb-2" />
+                        <p className="font-semibold text-neutral-700 dark:text-neutral-300">No bookings found</p>
+                        <p className="text-xs text-neutral-400 mt-1">Click &quot;+ New FCL Booking&quot; or &quot;+ New LCL Booking&quot; to issue a new slot confirmation.</p>
                       </td>
                     </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
+                  ) : (
+                    filtered.map(b => {
+                      const isPending = b.status === 'Pending Review';
+                      const isFcl = b.type === 'FCL';
+
+                      return (
+                        <tr
+                          key={b.id}
+                          className="hover:bg-neutral-50 dark:hover:bg-neutral-800/40 transition-colors"
+                        >
+                          <td className="py-3.5 px-4 font-bold text-neutral-900 dark:text-white">
+                            <div className="flex items-center gap-1.5">
+                              {isFcl ? (
+                                <Box className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
+                              ) : (
+                                <Boxes className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" />
+                              )}
+                              <span>{b.bookingNo}</span>
+                            </div>
+                            <div className="text-[10px] text-neutral-400 font-normal">{b.requestDate}</div>
+                          </td>
+
+                          <td className="py-3.5 px-4 max-w-[200px]">
+                            <div className="font-semibold text-neutral-900 dark:text-white font-sans truncate">{b.shipper}</div>
+                            <div className="text-[10px] text-neutral-400 font-sans truncate">to {b.consignee}</div>
+                          </td>
+
+                          <td className="py-3.5 px-4">
+                            <div className="font-bold text-neutral-800 dark:text-neutral-200">
+                              {b.containerQty}x {b.containerType}
+                            </div>
+                            <div className="text-[10px] text-neutral-400">
+                              {b.grossWeightKg ? `${b.grossWeightKg.toLocaleString()} KG` : ''}
+                              {b.cbmVolume ? ` · ${b.cbmVolume} CBM` : ''}
+                            </div>
+                          </td>
+
+                          <td className="py-3.5 px-4">
+                            <div className="truncate max-w-[170px] font-medium">{b.pol} &rarr; {b.pod}</div>
+                            <div className="text-[10px] text-neutral-400">ETD: {b.targetEtd}</div>
+                          </td>
+
+                          <td className="py-3.5 px-4">
+                            <div className="text-neutral-900 dark:text-white truncate max-w-[140px]">{b.carrier}</div>
+                            <div className="text-[10px] text-neutral-400">{b.targetVessel}</div>
+                          </td>
+
+                          <td className="py-3.5 px-4 font-bold text-neutral-900 dark:text-white whitespace-nowrap">
+                            ${b.totalFreightUsd.toLocaleString()} USD
+                          </td>
+
+                          <td className="py-3.5 px-4 text-center">
+                            <span
+                              className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                                isPending
+                                  ? 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300'
+                                  : 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
+                              }`}
+                            >
+                              {b.status}
+                            </span>
+                          </td>
+
+                          <td className="py-3.5 px-4 text-right space-x-1.5 whitespace-nowrap">
+                            <button
+                              onClick={() => setSelectedBookingForView(b)}
+                              className="px-2 py-1 rounded border border-neutral-300 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 text-[11px] font-semibold cursor-pointer"
+                            >
+                              View Details
+                            </button>
+
+                            {isPending && (
+                              <button
+                                onClick={() => approveBooking(b.id)}
+                                className="px-3 py-1 bg-neutral-950 hover:bg-neutral-800 text-white dark:bg-white dark:hover:bg-neutral-200 dark:text-neutral-950 font-sans font-medium text-[11px] rounded transition-colors cursor-pointer"
+                              >
+                                Approve
+                              </button>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </>
+      )}
 
       {/* Booking Details Full Inspector Modal */}
       {selectedBookingForView && (

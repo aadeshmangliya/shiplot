@@ -25,7 +25,11 @@ import {
   DebitCreditNote,
   CompanyUser,
   DocumentTemplate,
-  TemplateDocType
+  TemplateDocType,
+  LoloTicket,
+  LoloTariff,
+  ContainerCommercialPurpose,
+  ContainerConditionGrade
 } from '../types';
 import {
   initialCompanies,
@@ -47,7 +51,9 @@ import {
   initialPortCalls,
   initialLedgerEntries,
   initialDisbursementAccounts,
-  initialDebitCreditNotes
+  initialDebitCreditNotes,
+  initialLoloTariffs,
+  initialLoloTickets
 } from '../mock/data';
 import { initialCompanyUsers, initialDocumentTemplates } from '../mock/templateMockData';
 
@@ -129,6 +135,25 @@ interface AppContextType {
   addDisbursementAccount: (pda: DisbursementAccount) => void;
   debitCreditNotes: DebitCreditNote[];
   addDebitCreditNote: (note: DebitCreditNote) => void;
+
+  // LoLo (Lift-on / Lift-off) & Terminal Handling
+  loloTickets: LoloTicket[];
+  loloTariffs: LoloTariff[];
+  addLoloTicket: (ticket: LoloTicket) => void;
+  updateLoloTicket: (id: string, updates: Partial<LoloTicket>) => void;
+
+  // Container Fleet Asset & Commercial Management
+  updateContainerCommercialStatus: (
+    id: string,
+    purpose: ContainerCommercialPurpose,
+    details?: {
+      salePriceUsd?: number;
+      leaseDailyRateUsd?: number;
+      conditionGrade?: ContainerConditionGrade;
+    }
+  ) => void;
+  sellContainer: (id: string, buyer: string, soldPriceUsd: number) => void;
+  updateContainerImages: (id: string, images: string[]) => void;
 
   // Global Interactive Modals
   selectedShipmentForDetail: Shipment | null;
@@ -451,6 +476,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [disbursementAccounts, setDisbursementAccounts] = useState<DisbursementAccount[]>(initialDisbursementAccounts);
   const [debitCreditNotes, setDebitCreditNotes] = useState<DebitCreditNote[]>(initialDebitCreditNotes);
 
+  // LoLo (Lift-on / Lift-off) Handling & Tariffs
+  const [loloTickets, setLoloTickets] = useState<LoloTicket[]>(() => {
+    try {
+      const saved = localStorage.getItem('shiplot_lolo_tickets');
+      if (saved) return JSON.parse(saved);
+    } catch {}
+    return initialLoloTickets;
+  });
+  const [loloTariffs, setLoloTariffs] = useState<LoloTariff[]>(initialLoloTariffs);
+
   const addIgm = (newIgm: ImportGeneralManifest) => {
     setIgms(prev => [newIgm, ...prev]);
     addAuditLog({
@@ -671,6 +706,108 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     );
   };
 
+  const updateContainerCommercialStatus = (
+    id: string,
+    purpose: ContainerCommercialPurpose,
+    details?: {
+      salePriceUsd?: number;
+      leaseDailyRateUsd?: number;
+      conditionGrade?: ContainerConditionGrade;
+    }
+  ) => {
+    setContainers(prev =>
+      prev.map(c => {
+        if (c.id === id) {
+          return {
+            ...c,
+            commercialPurpose: purpose,
+            ...(details?.salePriceUsd !== undefined ? { salePriceUsd: details.salePriceUsd } : {}),
+            ...(details?.leaseDailyRateUsd !== undefined ? { leaseDailyRateUsd: details.leaseDailyRateUsd } : {}),
+            ...(details?.conditionGrade !== undefined ? { conditionGrade: details.conditionGrade } : {})
+          };
+        }
+        return c;
+      })
+    );
+    addAuditLog({
+      tenantId: currentCompany.id,
+      tenantName: currentCompany.name,
+      action: `Container operational status updated: ${id} set to ${purpose}`,
+      user: currentUser.email,
+      severity: 'info',
+      category: 'Containers & Gate Pass',
+      scope: 'NVOCC',
+      details: `Asset: ${id}, Purpose: ${purpose}, Grade: ${details?.conditionGrade || 'Unchanged'}, Price: $${details?.salePriceUsd || details?.leaseDailyRateUsd || 0}`,
+      targetRef: id,
+      status: 'Success'
+    });
+  };
+
+  const sellContainer = (id: string, buyer: string, soldPriceUsd: number) => {
+    setContainers(prev =>
+      prev.map(c => {
+        if (c.id === id) {
+          return {
+            ...c,
+            isSold: true,
+            soldToParty: buyer,
+            soldPriceUsd,
+            soldDate: new Date().toISOString().substring(0, 10),
+            status: 'Gated Out',
+            locationStatus: 'In Warehouse'
+          };
+        }
+        return c;
+      })
+    );
+    addAuditLog({
+      tenantId: currentCompany.id,
+      tenantName: currentCompany.name,
+      action: `Container asset sold: Container ${id} sold to ${buyer}`,
+      user: currentUser.email,
+      severity: 'info',
+      category: 'Finance & Billing',
+      scope: 'NVOCC',
+      details: `Buyer: ${buyer}, Transacted Amount: $${soldPriceUsd} USD`,
+      targetRef: id,
+      status: 'Success'
+    });
+  };
+
+  const updateContainerImages = (id: string, images: string[]) => {
+    setContainers(prev =>
+      prev.map(c => (c.id === id ? { ...c, images } : c))
+    );
+  };
+
+  const addLoloTicket = (ticket: LoloTicket) => {
+    setLoloTickets(prev => {
+      const updated = [ticket, ...prev];
+      try { localStorage.setItem('shiplot_lolo_tickets', JSON.stringify(updated)); } catch {}
+      return updated;
+    });
+    addAuditLog({
+      tenantId: currentCompany.id,
+      tenantName: currentCompany.name,
+      action: `LoLo container lift ticket issued: ${ticket.ticketNo} (${ticket.liftType})`,
+      user: currentUser.email,
+      severity: 'info',
+      category: 'Containers & Gate Pass',
+      scope: 'NVOCC',
+      details: `Container: ${ticket.containerNo}, Type: ${ticket.containerType}, Fee: $${ticket.loloFeeUsd}, Equipment: ${ticket.equipmentType} (${ticket.equipmentId}), Depot: ${ticket.depotName}`,
+      targetRef: ticket.ticketNo,
+      status: 'Success'
+    });
+  };
+
+  const updateLoloTicket = (id: string, updates: Partial<LoloTicket>) => {
+    setLoloTickets(prev => {
+      const updated = prev.map(t => (t.id === id ? { ...t, ...updates } : t));
+      try { localStorage.setItem('shiplot_lolo_tickets', JSON.stringify(updated)); } catch {}
+      return updated;
+    });
+  };
+
   const addGatePass = (newGatePass: GatePass) => {
     setGatePasses(prev => [newGatePass, ...prev]);
     addAuditLog({
@@ -785,6 +922,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         containers,
         addContainer,
         updateContainerLocation,
+        updateContainerCommercialStatus,
+        sellContainer,
+        updateContainerImages,
+        loloTickets,
+        loloTariffs,
+        addLoloTicket,
+        updateLoloTicket,
         gatePasses,
         addGatePass,
         updateGatePassStatus,
